@@ -84,15 +84,24 @@ async function loadPatientsFromSupabase(){
   const { data, error } = await supabaseClient
     .from("patients")
     .select("*")
+    .order("room",{ ascending:true });
 
   if(error){
     alert("利用者読込エラー: " + error.message);
     return;
   }
 
-  alert("利用者読込成功: " + data.length + "件");
-  console.log("patients", data);
-}  
+  state.users = data.map(p => ({
+    id: p.id,
+    facilityId: state.facilityId,
+    name: p.name,
+    room: p.room || "",
+    status: "利用中"
+  }));
+
+  save();
+  render();
+}
 function renderLogin(){
 root.innerHTML=`
 <div class="login"><div class="login-card">
@@ -121,7 +130,8 @@ if(type==="admin"&&pw!==ADMIN_PASSWORD)return alert("管理者パスワードは
 state.facilityId=fid;state.login=type;
 state.selectedUser=users()[0]?.name||"";
 const s=staff()[0];state.selectedStaff=s?.name||"";state.selectedJob=s?.job||"看護師";
-save();render();
+save();
+loadPatientsFromSupabase();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
@@ -161,7 +171,31 @@ state.records.push({id:Date.now(),...state.active,visitNo,endTime,minutes:mins(s
 state.active=null;state.vitals={temperature:"36.5",systolic:"",diastolic:"",pulse:"",spo2:"95",memo:""};
 save();render();
 }
-function addUser(){if(!isAdmin())return;const name=document.getElementById("newUserName").value.trim(),room=document.getElementById("newUserRoom").value.trim();if(!name)return;state.users.push({id:Date.now(),facilityId:state.facilityId,name,room,status:"利用中"});save();render()}
+async function addUser(){
+  if(!isAdmin()) return;
+
+  const name = document.getElementById("newUserName").value.trim();
+  const room = document.getElementById("newUserRoom").value.trim();
+
+  if(!name) return;
+
+  const { error } = await supabaseClient
+    .from("patients")
+    .insert({
+      name: name,
+      room: room,
+      facility_id: null
+    });
+
+  if(error){
+    alert("利用者追加エラー: " + error.message);
+    return;
+  }
+
+  alert("利用者追加成功");
+
+  await loadPatientsFromSupabase();
+}
 function addStaff(){if(!isAdmin())return;const name=document.getElementById("newStaffName").value.trim(),job=document.getElementById("newStaffJob").value;if(!name)return;state.staff.push({id:Date.now(),facilityId:state.facilityId,name,job});save();render()}
 function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
 function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
