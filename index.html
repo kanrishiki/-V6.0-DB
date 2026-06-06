@@ -241,7 +241,7 @@ async function loadStaffFromSupabase(){
     return;
   }
 
-  state.staffs = data.map(s => ({
+  state.staff = data.map(s => ({
     id: s.id,
     facilityId: state.facilityId,
     name: s.name,
