@@ -140,6 +140,7 @@ const s=staff()[0];state.selectedStaff=s?.name||"";state.selectedJob=s?.job||"�
 save();
 await loadPatientsFromSupabase();
 await loadStaffFromSupabase();
+await loadContentFromSupabase();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
@@ -253,8 +254,67 @@ async function loadStaffFromSupabase(){
   save();
   render();
 }
-function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
-function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
+async function loadContentFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from("content_master")
+    .select("*")
+    .eq("facility_id", FACILITY_IDS[state.facilityId])
+    .order("content_name");
+
+  if(error){
+    alert("内容読込エラー: " + error.message);
+    return;
+  }
+
+  state.contentMaster = data.map(c => c.content_name);
+
+  alert("内容読込成功: " + data.length + "件");
+
+  save();
+  render();
+}
+async function addContent(){
+  if(!isAdmin()) return;
+
+  const v = document.getElementById("newContent").value.trim();
+  if(!v) return;
+
+  const { error } = await supabaseClient
+    .from("content_master")
+    .insert({
+      content_name: v,
+      facility_id: FACILITY_IDS[state.facilityId]
+    });
+
+  if(error){
+    alert("内容追加エラー: " + error.message);
+    return;
+  }
+
+  alert("内容追加成功");
+
+  await loadContentFromSupabase();
+}
+async function deleteContent(v){
+  if(!isAdmin()) return;
+
+  if(!confirm(`${v} を削除する？`)) return;
+
+  const { error } = await supabaseClient
+    .from("content_master")
+    .delete()
+    .eq("content_name", v)
+    .eq("facility_id", FACILITY_IDS[state.facilityId]);
+
+  if(error){
+    alert("内容削除エラー: " + error.message);
+    return;
+  }
+
+  alert("内容削除成功");
+
+  await loadContentFromSupabase();
+}
 async function deleteUser(id){
   alert("削除ボタンは反応してるよ。id=" + id);
 
