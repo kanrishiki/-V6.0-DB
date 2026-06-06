@@ -438,11 +438,42 @@ async function deleteStaff(id){
 }
 function beginEdit(id){state.editingId=id;save();render()}
 function cancelEdit(){state.editingId=null;save();render()}
-function saveEdit(id){
-const r=state.records.find(x=>x.id===id);if(!r)return;
-r.date=document.getElementById(`ed-date-${id}`).value;r.user=document.getElementById(`ed-user-${id}`).value;r.staff=document.getElementById(`ed-staff-${id}`).value;r.job=document.getElementById(`ed-job-${id}`).value;r.content=document.getElementById(`ed-content-${id}`).value;r.startTime=document.getElementById(`ed-start-${id}`).value;r.endTime=document.getElementById(`ed-end-${id}`).value;r.minutes=mins(r.startTime,r.endTime);
-r.vitals.temperature=document.getElementById(`ed-temp-${id}`).value;r.vitals.systolic=document.getElementById(`ed-sys-${id}`).value;r.vitals.diastolic=document.getElementById(`ed-dia-${id}`).value;r.vitals.pulse=document.getElementById(`ed-pulse-${id}`).value;r.vitals.spo2=document.getElementById(`ed-spo2-${id}`).value;r.vitals.memo=document.getElementById(`ed-memo-${id}`).value;
-state.editingId=null;save();render();
+async function saveEdit(id){
+  const r = state.records.find(x => x.id === id);
+  if(!r) return;
+
+  const updated = {
+    visit_date: document.getElementById(`ed-date-${id}`).value,
+    patient_name: document.getElementById(`ed-user-${id}`).value,
+    staff_name: document.getElementById(`ed-staff-${id}`).value,
+    job: document.getElementById(`ed-job-${id}`).value,
+    content: document.getElementById(`ed-content-${id}`).value,
+    start_time: document.getElementById(`ed-start-${id}`).value,
+    end_time: document.getElementById(`ed-end-${id}`).value,
+    temperature: document.getElementById(`ed-temp-${id}`).value || null,
+    systolic: document.getElementById(`ed-sys-${id}`).value || null,
+    diastolic: document.getElementById(`ed-dia-${id}`).value || null,
+    pulse: document.getElementById(`ed-pulse-${id}`).value || null,
+    spo2: document.getElementById(`ed-spo2-${id}`).value || null,
+    memo: document.getElementById(`ed-memo-${id}`).value || ""
+  };
+
+  updated.total_minutes = mins(updated.start_time, updated.end_time);
+
+  const { error } = await supabaseClient
+    .from("nursing_records")
+    .update(updated)
+    .eq("id", id);
+
+  if(error){
+    alert("記録修正エラー: " + error.message);
+    return;
+  }
+
+  alert("記録修正成功");
+
+  state.editingId = null;
+  await loadRecordsFromSupabase();
 }
 async function deleteRecord(id){
 
@@ -494,7 +525,7 @@ if(state.editingId===r.id)return`
 <td><input id="ed-start-${r.id}" value="${h(r.startTime)}">〜<input id="ed-end-${r.id}" value="${h(r.endTime)}"></td>
 <td><input id="ed-temp-${r.id}" type="number" step="0.1" value="${h(r.vitals.temperature)}"><input id="ed-sys-${r.id}" value="${h(r.vitals.systolic)}"><input id="ed-dia-${r.id}" value="${h(r.vitals.diastolic)}"><input id="ed-pulse-${r.id}" value="${h(r.vitals.pulse)}"><input id="ed-spo2-${r.id}" type="number" step="1" min="0" max="100" value="${h(r.vitals.spo2)}"></td>
 <td><input id="ed-memo-${r.id}" value="${h(r.vitals.memo)}"></td>
-<td><button class="icon" onclick="saveEdit(${r.id})">保存</button><button class="icon" onclick="cancelEdit()">取消</button></td>
+<td><button class="icon" onclick="saveEdit('${r.id}')">保存</button><button class="icon" onclick="cancelEdit()">取消</button></td>
 </tr>`;
 return`
 <tr>
