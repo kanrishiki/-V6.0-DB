@@ -80,6 +80,19 @@ async function testSupabaseConnection(){
 
   alert("Supabase接続成功！");
 }
+async function loadPatientsFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from("patients")
+    .select("*")
+
+  if(error){
+    alert("利用者読込エラー: " + error.message);
+    return;
+  }
+
+  alert("利用者読込成功: " + data.length + "件");
+  console.log("patients", data);
+}  
 function renderLogin(){
 root.innerHTML=`
 <div class="login"><div class="login-card">
