@@ -206,7 +206,25 @@ async function addUser(){
 function addStaff(){if(!isAdmin())return;const name=document.getElementById("newStaffName").value.trim(),job=document.getElementById("newStaffJob").value;if(!name)return;state.staff.push({id:Date.now(),facilityId:state.facilityId,name,job});save();render()}
 function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
 function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
-function deleteUser(id){if(!isAdmin())return;if(confirm("利用者を削除する？")){state.users=state.users.filter(u=>u.id!==id);save();render()}}
+async function deleteUser(id){
+  if(!isAdmin()) return;
+
+  if(!confirm("利用者を削除する？")) return;
+
+  const { error } = await supabaseClient
+    .from("patients")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("利用者削除エラー: " + error.message);
+    return;
+  }
+
+  alert("利用者削除成功");
+
+  await loadPatientsFromSupabase();
+}
 function deleteStaff(id){if(!isAdmin())return;if(confirm("職員を削除する？")){state.staff=state.staff.filter(s=>s.id!==id);save();render()}}
 function beginEdit(id){state.editingId=id;save();render()}
 function cancelEdit(){state.editingId=null;save();render()}
