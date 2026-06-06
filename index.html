@@ -175,9 +175,9 @@ state.active={facilityId:state.facilityId,date:state.date,user:state.selectedUse
 save();render();
 }
 async function saveRecordToSupabase(record){
-  const { error } = await supabaseClient
-    .from("nursing_records")
-    .insert({
+ const { data, error } = await supabaseClient
+  .from("nursing_records")
+  .insert({
       facility_id: FACILITY_IDS[state.facilityId],
       patient_name: record.user,
       staff_name: record.staff,
@@ -193,7 +193,9 @@ async function saveRecordToSupabase(record){
       pulse: record.vitals.pulse || null,
       spo2: record.vitals.spo2 || null,
       memo: record.vitals.memo || ""
-    });
+   })
+.select("id")
+.single();
 
   if(error){
     alert("記録保存エラー: " + error.message);
@@ -201,7 +203,7 @@ async function saveRecordToSupabase(record){
   }
 
   alert("Supabase記録保存成功");
-  return true;
+return data.id;
 }
 async function loadRecordsFromSupabase(){
   const { data, error } = await supabaseClient
@@ -248,7 +250,11 @@ const endTime=now(),visitNo=records().filter(r=>r.date===state.active.date&&r.us
 state.records.push({id:Date.now(),...state.active,visitNo,endTime,minutes:mins(state.active.startTime,endTime),vitals:{...state.vitals}});
 const record = state.records[state.records.length - 1];
 
-await saveRecordToSupabase(record);
+const supabaseId = await saveRecordToSupabase(record);
+
+if(supabaseId){
+  record.id = supabaseId;
+}
 state.active=null;state.vitals={temperature:"36.5",systolic:"",diastolic:"",pulse:"",spo2:"95",memo:""};
 save();render();
 }
