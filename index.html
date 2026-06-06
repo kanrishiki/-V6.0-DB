@@ -24,6 +24,13 @@ const FACILITIES=[
 {id:"kanazawa",name:"ウェルホーム+ナースステーション金沢",short:"金沢"},
 {id:"ichinomiya",name:"ウェルホーム+ナースステーション一宮",short:"一宮"}
 ];
+const FACILITY_IDS = {
+  kamagaya: "0fe9f506-f850-45e5-b672-f128ffc639b0",
+  kanazawa: "3159ad9d-287d-4526-bfed-700cd25c45e7",
+  ichinomiya: "57c04ae4-c5a2-4b4b-a5bb-f4c457efc96b",
+  kawaguchi: "8d82c017-10e2-4ea8-a0d5-4cffda56f327",
+  shiki: "e548e835-50c8-472f-b942-7125b213921d"
+};
 const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",KEY="nursing_record_v54";
 const JOBS=["看護師","准看護師","PT","OT","ST"];
 
@@ -82,10 +89,10 @@ alert("Supabase接続成功！");
 }
 async function loadPatientsFromSupabase(){
   const { data, error } = await supabaseClient
-    .from("patients")
-    .select("*")
-    .order("room",{ ascending:true });
-
+  .from("patients")
+.select("*")
+.eq("facility_id", FACILITY_IDS[state.facilityId])
+.order("room",{ ascending:true });
   if(error){
     alert("利用者読込エラー: " + error.message);
     return;
@@ -181,11 +188,11 @@ async function addUser(){
 
   const { error } = await supabaseClient
     .from("patients")
-    .insert({
-      name: name,
-      room: room,
-      facility_id: null
-    });
+   .insert({
+  name: name,
+  room: room,
+ facility_id: FACILITY_IDS[state.facilityId]
+});
 
   if(error){
     alert("利用者追加エラー: " + error.message);
