@@ -531,7 +531,7 @@ return`
 <tr>
 <td>${h(r.date)}</td><td>${h(r.visitNo)}回目</td><td>${h(r.user)}</td><td>${h(r.staff)}</td><td><span class="badge">${h(r.job)}</span></td><td>${h(r.content)}</td><td>${h(r.startTime)}〜${h(r.endTime)}<br>${h(r.minutes)}分</td>
 <td>BT ${h(r.vitals.temperature)} / BP ${h(r.vitals.systolic)}-${h(r.vitals.diastolic)} / P ${h(r.vitals.pulse)} / SpO2 ${h(r.vitals.spo2)}</td>
-<td>${h(r.vitals.memo)}</td><td><button class="icon" onclick="beginEdit(${r.id})">修正</button>${isAdmin()?`<button class="icon danger" onclick="deleteRecord('${r.id}')">削除</button>`:""}</td>
+<td>${h(r.vitals.memo)}</td><td><button class="icon" onclick="beginEdit('${r.id}')">修正</button>${isAdmin()?`<button class="icon danger" onclick="deleteRecord('${r.id}')">削除</button>`:""}</td>
 </tr>`;
 }
 
