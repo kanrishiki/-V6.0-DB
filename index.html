@@ -130,7 +130,7 @@ root.innerHTML=`
 <p class="muted">職員：入力・修正のみ / 管理者：削除・マスタ・CSV可</p>
 </div></div>`;
 }
-function login(){
+async function login(){
 const fid=document.getElementById("loginFacility").value,type=document.getElementById("loginType").value,pw=document.getElementById("loginPassword").value;
 if(type==="staff"&&pw!==STAFF_PASSWORD)return alert("職員パスワードは staff1234");
 if(type==="admin"&&pw!==ADMIN_PASSWORD)return alert("管理者パスワードは admin1234");
@@ -138,7 +138,8 @@ state.facilityId=fid;state.login=type;
 state.selectedUser=users()[0]?.name||"";
 const s=staff()[0];state.selectedStaff=s?.name||"";state.selectedJob=s?.job||"看護師";
 save();
-loadPatientsFromSupabase();
+await loadPatientsFromSupabase();
+await loadStaffFromSupabase();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
@@ -203,7 +204,55 @@ async function addUser(){
 
   await loadPatientsFromSupabase();
 }
-function addStaff(){if(!isAdmin())return;const name=document.getElementById("newStaffName").value.trim(),job=document.getElementById("newStaffJob").value;if(!name)return;state.staff.push({id:Date.now(),facilityId:state.facilityId,name,job});save();render()}
+async function addStaff(){
+  if(!isAdmin()) return;
+
+  const name = document.getElementById("newStaffName").value.trim();
+  const job = document.getElementById("newStaffJob").value;
+
+  if(!name) return;
+
+  const { error } = await supabaseClient
+    .from("staff_members")
+    .insert({
+      name: name,
+      job: job,
+      facility_id: FACILITY_IDS[state.facilityId]
+    });
+
+  if(error){
+    alert("職員追加エラー: " + error.message);
+    return;
+  }
+
+  alert("職員追加成功");
+
+  await loadStaffFromSupabase();
+}
+async function loadStaffFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from("staff_members")
+    .select("*")
+    .eq("facility_id", FACILITY_IDS[state.facilityId])
+    .order("name");
+
+  if(error){
+    alert("職員読込エラー: " + error.message);
+    return;
+  }
+
+  state.staffs = data.map(s => ({
+    id: s.id,
+    facilityId: state.facilityId,
+    name: s.name,
+    job: s.job
+  }));
+
+  alert("職員読込成功: " + data.length + "件");
+
+  save();
+  render();
+}
 function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
 function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
 async function deleteUser(id){
