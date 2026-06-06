@@ -141,6 +141,7 @@ save();
 await loadPatientsFromSupabase();
 await loadStaffFromSupabase();
 await loadContentFromSupabase();
+await loadRecordsFromSupabase();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
@@ -201,6 +202,45 @@ async function saveRecordToSupabase(record){
 
   alert("Supabase記録保存成功");
   return true;
+}
+async function loadRecordsFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from("nursing_records")
+    .select("*")
+    .eq("facility_id", FACILITY_IDS[state.facilityId])
+    .order("created_at", { ascending:false });
+
+  if(error){
+    alert("記録読込エラー: " + error.message);
+    return;
+  }
+
+  state.records = data.map(r => ({
+    id: r.id,
+    facilityId: state.facilityId,
+    date: r.visit_date,
+    user: r.patient_name,
+    staff: r.staff_name,
+    job: r.job,
+    content: r.content,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    minutes: r.total_minutes || 0,
+    visitNo: 1,
+    vitals:{
+      temperature: r.temperature || "",
+      systolic: r.systolic || "",
+      diastolic: r.diastolic || "",
+      pulse: r.pulse || "",
+      spo2: r.spo2 || "",
+      memo: r.memo || ""
+    }
+  }));
+
+  alert("記録読込成功: " + data.length + "件");
+
+  save();
+  render();
 }
 async function endVisit(){
 readInput();if(!state.active)return;
