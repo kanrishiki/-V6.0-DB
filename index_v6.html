@@ -1,1 +1,291 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>看護記録アプリ Ver5.4</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#f3f4f6;color:#111827}button,input,select,textarea{font:inherit}button{border:0;border-radius:14px;background:#111827;color:#fff;padding:12px 16px;font-weight:700;cursor:pointer}button:disabled{opacity:.45}.outline{background:#fff;color:#111827;border:1px solid #d1d5db}.danger{background:#991b1b;color:#fff}input,select,textarea{width:100%;border:1px solid #d1d5db;border-radius:14px;padding:12px;background:#fff}textarea{min-height:95px}label{display:grid;gap:6px;font-size:14px;color:#374151}.app{max-width:1440px;margin:auto;padding:24px}.login{min-height:100vh;display:grid;place-items:center;padding:20px}.card,.login-card{background:white;border-radius:24px;padding:22px;box-shadow:0 2px 16px #0001}.login-card{max-width:500px;width:100%;display:grid;gap:14px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;margin-bottom:20px}.actions{display:flex;gap:8px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:2fr 1fr;gap:18px}.full{grid-column:1/-1}.form2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}.form4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}.form5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:14px 0}.master{display:grid;grid-template-columns:1.4fr .8fr auto;gap:8px;margin-bottom:12px}.active-box{background:#111827;color:#fff;border-radius:14px;padding:14px;margin:12px 0}.row,.mini{display:flex;justify-content:space-between;gap:12px;border:1px solid #e5e7eb;background:#f9fafb;border-radius:14px;padding:10px 12px;margin:8px 0}.row p{margin:4px 0 0;color:#6b7280;font-size:13px}.icon{background:#fff;color:#111827;border:1px solid #d1d5db;padding:8px 10px;border-radius:10px;margin:2px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}.summary div{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:10px}.summary small{color:#6b7280;display:block}.summary b{font-size:18px}.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}.tabs button{background:#fff;color:#111827;border:1px solid #d1d5db}.tabs button.active{background:#111827;color:#fff}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}th,td{border:1px solid #e5e7eb;padding:9px;text-align:left;vertical-align:top}th{background:#f3f4f6}.muted{color:#6b7280;font-size:13px}.badge{display:inline-block;border-radius:999px;padding:4px 10px;background:#e5e7eb;font-size:12px;font-weight:700}.csv-panel{border:1px solid #d1d5db;background:#f9fafb;border-radius:18px;padding:16px;margin:14px 0}.csv-user-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}@media(max-width:1000px){.grid,.form2,.form4,.form5,.summary,.tabs,.master,.csv-user-row{grid-template-columns:1fr}.header{display:block}.actions{margin-top:12px}.app{padding:12px}}
+</style>
+</head>
+<body>
+<div id="root"></div>
 
+<script>
+const FACILITIES=[
+{id:"kamagaya",name:"ウェルホーム+ナースステーション鎌ヶ谷",short:"鎌ヶ谷"},
+{id:"kawaguchi",name:"ウェルホーム+ナースステーション川口",short:"川口"},
+{id:"shiki",name:"ウェルホーム+ナースステーション志木",short:"志木"},
+{id:"kanazawa",name:"ウェルホーム+ナースステーション金沢",short:"金沢"},
+{id:"ichinomiya",name:"ウェルホーム+ナースステーション一宮",short:"一宮"}
+];
+const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",KEY="nursing_record_v54";
+const JOBS=["看護師","准看護師","PT","OT","ST"];
+
+let state=load();
+
+function initial(){
+const today=new Date().toISOString().slice(0,10);
+return{
+login:null,facilityId:"kamagaya",date:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
+userSearch:"",csvPanel:"",csvUserSearch:"",content:"バイタル測定",custom:"",active:null,tab:"日別",filterUser:"全員",
+vitals:{temperature:"36.5",systolic:"",diastolic:"",pulse:"",spo2:"95",memo:""},
+contentMaster:["バイタル測定","服薬確認・管理","処置","創部観察","点滴管理","吸引","経管栄養","排泄ケア","リハビリ・機能訓練","状態観察","家族・医師への連絡","看護記録作成","その他"],
+users:[
+{id:1,facilityId:"kamagaya",name:"山田 太郎",room:"101",status:"利用中"},
+{id:2,facilityId:"kamagaya",name:"佐藤 花子",room:"102",status:"利用中"},
+{id:3,facilityId:"kawaguchi",name:"川口 利用者A",room:"201",status:"利用中"},
+{id:4,facilityId:"shiki",name:"志木 利用者A",room:"301",status:"利用中"},
+{id:5,facilityId:"kanazawa",name:"金沢 利用者A",room:"401",status:"利用中"},
+{id:6,facilityId:"ichinomiya",name:"一宮 利用者A",room:"501",status:"利用中"}
+],
+staff:[
+{id:1,facilityId:"kamagaya",name:"西川",job:"看護師"},
+{id:2,facilityId:"kamagaya",name:"リハA",job:"PT"},
+{id:3,facilityId:"kawaguchi",name:"川口 職員A",job:"看護師"},
+{id:4,facilityId:"shiki",name:"志木 職員A",job:"OT"},
+{id:5,facilityId:"kanazawa",name:"金沢 職員A",job:"ST"},
+{id:6,facilityId:"ichinomiya",name:"一宮 職員A",job:"看護師"}
+],
+records:[],editingId:null
+}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||initial()}catch{return initial()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function h(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function now(){return new Date().toTimeString().slice(0,5)}
+function fmt(m){return `${Math.floor(m/60)}時間 ${m%60}分`}
+function mins(s,e){if(!s||!e)return 0;const[sh,sm]=s.split(":").map(Number),[eh,em]=e.split(":").map(Number);return Math.max(0,eh*60+em-(sh*60+sm))}
+function facility(){return FACILITIES.find(f=>f.id===state.facilityId)}
+function users(){return state.users.filter(u=>u.facilityId===state.facilityId)}
+function staff(){return state.staff.filter(s=>s.facilityId===state.facilityId)}
+function records(){return state.records.filter(r=>r.facilityId===state.facilityId)}
+function isAdmin(){return state.login==="admin"}
+function group(list,keyFn){return list.reduce((a,r)=>{const k=keyFn(r);if(!a[k])a[k]={visits:0,minutes:0};a[k].visits++;a[k].minutes+=Number(r.minutes||0);return a},{})}
+function weekRange(d){const base=new Date(d),day=base.getDay(),diff=day===0?-6:1-day;const mon=new Date(base);mon.setDate(base.getDate()+diff);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const y=x=>x.toISOString().slice(0,10);return{start:y(mon),end:y(sun)}}
+
+function renderLogin(){
+root.innerHTML=`
+<div class="login"><div class="login-card">
+<h1>看護記録・時間積算アプリ Ver5.4</h1>
+<p class="muted">CSV条件選択対応版。</p>
+<label>ログイン拠点<select id="loginFacility">${FACILITIES.map(f=>`<option value="${f.id}" ${state.facilityId===f.id?"selected":""}>${h(f.name)}</option>`).join("")}</select></label>
+<label>ログイン種別<select id="loginType"><option value="staff">職員ログイン</option><option value="admin">管理者ログイン</option></select></label>
+<label>パスワード
+<input 
+  id="loginPassword" 
+  type="password" 
+  placeholder="職員: staff1234 / 管理者: admin1234"
+  onkeydown="if(event.key==='Enter'){login()}"
+>
+</label>
+<button onclick="login()">ログイン</button>
+<p class="muted">職員：入力・修正のみ / 管理者：削除・マスタ・CSV可</p>
+</div></div>`;
+}
+function login(){
+const fid=document.getElementById("loginFacility").value,type=document.getElementById("loginType").value,pw=document.getElementById("loginPassword").value;
+if(type==="staff"&&pw!==STAFF_PASSWORD)return alert("職員パスワードは staff1234");
+if(type==="admin"&&pw!==ADMIN_PASSWORD)return alert("管理者パスワードは admin1234");
+state.facilityId=fid;state.login=type;
+state.selectedUser=users()[0]?.name||"";
+const s=staff()[0];state.selectedStaff=s?.name||"";state.selectedJob=s?.job||"看護師";
+save();render();
+}
+function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
+function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
+
+function readInput(){
+state.date=document.getElementById("date")?.value||state.date;
+state.selectedUser=document.getElementById("selectedUser")?.value||"";
+state.selectedStaff=document.getElementById("staffName")?.value||"";
+const s=staff().find(x=>x.name===state.selectedStaff);
+state.selectedJob=s?.job||"看護師";
+state.content=document.getElementById("content")?.value||state.content;
+state.custom=document.getElementById("custom")?.value||"";
+state.vitals={
+temperature:document.getElementById("temperature")?.value||"36.5",
+systolic:document.getElementById("systolic")?.value||"",
+diastolic:document.getElementById("diastolic")?.value||"",
+pulse:document.getElementById("pulse")?.value||"",
+spo2:document.getElementById("spo2")?.value||"95",
+memo:document.getElementById("memo")?.value||""
+};save();
+}
+function onStaffChange(){
+const name=document.getElementById("staffName").value,s=staff().find(x=>x.name===name);
+state.selectedStaff=name;state.selectedJob=s?.job||"看護師";save();render();
+}
+function startVisit(){
+readInput();
+if(!state.selectedUser)return alert("利用者を選んでね");
+if(!state.selectedStaff)return alert("職員名を選んでね");
+state.active={facilityId:state.facilityId,date:state.date,user:state.selectedUser,staff:state.selectedStaff,job:state.selectedJob,content:state.content==="その他"?(state.custom||"その他"):state.content,startTime:now()};
+save();render();
+}
+function endVisit(){
+readInput();if(!state.active)return;
+const endTime=now(),visitNo=records().filter(r=>r.date===state.active.date&&r.user===state.active.user).length+1;
+state.records.push({id:Date.now(),...state.active,visitNo,endTime,minutes:mins(state.active.startTime,endTime),vitals:{...state.vitals}});
+state.active=null;state.vitals={temperature:"36.5",systolic:"",diastolic:"",pulse:"",spo2:"95",memo:""};
+save();render();
+}
+function addUser(){if(!isAdmin())return;const name=document.getElementById("newUserName").value.trim(),room=document.getElementById("newUserRoom").value.trim();if(!name)return;state.users.push({id:Date.now(),facilityId:state.facilityId,name,room,status:"利用中"});save();render()}
+function addStaff(){if(!isAdmin())return;const name=document.getElementById("newStaffName").value.trim(),job=document.getElementById("newStaffJob").value;if(!name)return;state.staff.push({id:Date.now(),facilityId:state.facilityId,name,job});save();render()}
+function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
+function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
+function deleteUser(id){if(!isAdmin())return;if(confirm("利用者を削除する？")){state.users=state.users.filter(u=>u.id!==id);save();render()}}
+function deleteStaff(id){if(!isAdmin())return;if(confirm("職員を削除する？")){state.staff=state.staff.filter(s=>s.id!==id);save();render()}}
+function beginEdit(id){state.editingId=id;save();render()}
+function cancelEdit(){state.editingId=null;save();render()}
+function saveEdit(id){
+const r=state.records.find(x=>x.id===id);if(!r)return;
+r.date=document.getElementById(`ed-date-${id}`).value;r.user=document.getElementById(`ed-user-${id}`).value;r.staff=document.getElementById(`ed-staff-${id}`).value;r.job=document.getElementById(`ed-job-${id}`).value;r.content=document.getElementById(`ed-content-${id}`).value;r.startTime=document.getElementById(`ed-start-${id}`).value;r.endTime=document.getElementById(`ed-end-${id}`).value;r.minutes=mins(r.startTime,r.endTime);
+r.vitals.temperature=document.getElementById(`ed-temp-${id}`).value;r.vitals.systolic=document.getElementById(`ed-sys-${id}`).value;r.vitals.diastolic=document.getElementById(`ed-dia-${id}`).value;r.vitals.pulse=document.getElementById(`ed-pulse-${id}`).value;r.vitals.spo2=document.getElementById(`ed-spo2-${id}`).value;r.vitals.memo=document.getElementById(`ed-memo-${id}`).value;
+state.editingId=null;save();render();
+}
+function deleteRecord(id){if(!isAdmin())return;if(confirm("この記録を削除する？")){state.records=state.records.filter(r=>r.id!==id);save();render()}}
+
+function csv(list,name){
+if(!isAdmin())return;
+const header=["拠点","日付","訪問回数","利用者名","職員名","職種","内容","開始時間","終了時間","合計分","体温","血圧上","血圧下","脈拍","SpO2","メモ"];
+const rows=list.map(r=>[facility().name,r.date,r.visitNo,r.user,r.staff,r.job,r.content,r.startTime,r.endTime,r.minutes,r.vitals.temperature,r.vitals.systolic,r.vitals.diastolic,r.vitals.pulse,r.vitals.spo2,r.vitals.memo]);
+const text=[header,...rows].map(row=>row.map(c=>`"${String(c??"").replaceAll('"','""')}"`).join(",")).join("\n");
+const blob=new Blob(["\uFEFF"+text],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+}
+function dailyCSV(){state.csvPanel="daily";save();render()}
+function weeklyCSV(){state.csvPanel="weekly";save();render()}
+function monthlyCSV(){state.csvPanel="monthly";save();render()}
+function userCSV(){state.csvPanel="user";save();render()}
+function closeCsvPanel(){state.csvPanel="";save();render()}
+function exportDailyCSV(){const d=document.getElementById("csvDailyDate")?.value||state.date;csv(records().filter(r=>r.date===d),`日別CSV_${facility().short}_${d}.csv`)}
+function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.value||state.date,w=weekRange(d);csv(records().filter(r=>r.date>=w.start&&r.date<=w.end),`週別CSV_${facility().short}_${w.start}_${w.end}.csv`)}
+function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
+function exportUserCSV(){const u=document.getElementById("csvUserSelect")?.value||"全員";if(u==="全員"){csv(records(),`利用者別CSV_${facility().short}_全員.csv`);return}csv(records().filter(r=>r.user===u),`利用者別CSV_${facility().short}_${u}.csv`)}
+
+function recordRow(r){
+if(state.editingId===r.id)return`
+<tr>
+<td><input id="ed-date-${r.id}" type="date" value="${h(r.date)}"></td><td>${h(r.visitNo)}回目</td>
+<td><select id="ed-user-${r.id}">${users().map(u=>`<option value="${h(u.name)}" ${r.user===u.name?"selected":""}>${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></td>
+<td><select id="ed-staff-${r.id}">${staff().map(s=>`<option value="${h(s.name)}" ${r.staff===s.name?"selected":""}>${h(s.name)}</option>`).join("")}</select></td>
+<td><select id="ed-job-${r.id}">${JOBS.map(j=>`<option value="${h(j)}" ${r.job===j?"selected":""}>${h(j)}</option>`).join("")}</select></td>
+<td><select id="ed-content-${r.id}">${state.contentMaster.map(c=>`<option value="${h(c)}" ${r.content===c?"selected":""}>${h(c)}</option>`).join("")}</select></td>
+<td><input id="ed-start-${r.id}" value="${h(r.startTime)}">〜<input id="ed-end-${r.id}" value="${h(r.endTime)}"></td>
+<td><input id="ed-temp-${r.id}" type="number" step="0.1" value="${h(r.vitals.temperature)}"><input id="ed-sys-${r.id}" value="${h(r.vitals.systolic)}"><input id="ed-dia-${r.id}" value="${h(r.vitals.diastolic)}"><input id="ed-pulse-${r.id}" value="${h(r.vitals.pulse)}"><input id="ed-spo2-${r.id}" type="number" step="1" min="0" max="100" value="${h(r.vitals.spo2)}"></td>
+<td><input id="ed-memo-${r.id}" value="${h(r.vitals.memo)}"></td>
+<td><button class="icon" onclick="saveEdit(${r.id})">保存</button><button class="icon" onclick="cancelEdit()">取消</button></td>
+</tr>`;
+return`
+<tr>
+<td>${h(r.date)}</td><td>${h(r.visitNo)}回目</td><td>${h(r.user)}</td><td>${h(r.staff)}</td><td><span class="badge">${h(r.job)}</span></td><td>${h(r.content)}</td><td>${h(r.startTime)}〜${h(r.endTime)}<br>${h(r.minutes)}分</td>
+<td>BT ${h(r.vitals.temperature)} / BP ${h(r.vitals.systolic)}-${h(r.vitals.diastolic)} / P ${h(r.vitals.pulse)} / SpO2 ${h(r.vitals.spo2)}</td>
+<td>${h(r.vitals.memo)}</td><td><button class="icon" onclick="beginEdit(${r.id})">修正</button>${isAdmin()?`<button class="icon danger" onclick="deleteRecord(${r.id})">削除</button>`:""}</td>
+</tr>`;
+}
+
+function csvPanelHtml(filteredCsvUsers){
+if(!state.csvPanel)return "";
+const title=state.csvPanel==="daily"?"日別CSV出力":state.csvPanel==="weekly"?"週別CSV出力":state.csvPanel==="monthly"?"月別CSV出力":"利用者別CSV出力";
+let body="";
+let action="";
+if(state.csvPanel==="daily"){
+body=`<label>出力日<input id="csvDailyDate" type="date" value="${h(state.date)}"></label>`;
+action=`<button onclick="exportDailyCSV()">この日付でCSV出力</button>`;
+}
+if(state.csvPanel==="weekly"){
+body=`<label>週を選ぶ日付<input id="csvWeeklyDate" type="date" value="${h(state.date)}"></label><p class="muted">選択した日付を含む月曜〜日曜の記録を出力します。</p>`;
+action=`<button onclick="exportWeeklyCSV()">この週でCSV出力</button>`;
+}
+if(state.csvPanel==="monthly"){
+body=`<label>出力月<input id="csvMonthlyMonth" type="month" value="${h(state.date.slice(0,7))}"></label>`;
+action=`<button onclick="exportMonthlyCSV()">この月でCSV出力</button>`;
+}
+if(state.csvPanel==="user"){
+body=`<div class="csv-user-row">
+<label>利用者検索<input id="csvUserSearch" placeholder="名前・居室で検索" value="${h(state.csvUserSearch||"")}" oninput="state.csvUserSearch=this.value;save();render()"></label>
+<label>出力対象<select id="csvUserSelect"><option value="全員">全員</option>${filteredCsvUsers.map(u=>`<option value="${h(u.name)}">${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
+</div>`;
+action=`<button onclick="exportUserCSV()">この条件でCSV出力</button>`;
+}
+return `<div class="csv-panel"><h3>${title}</h3>${body}<div class="actions">${action}<button class="outline" onclick="closeCsvPanel()">閉じる</button></div></div>`;
+}
+
+function render(){
+if(!state.login){renderLogin();return}
+const us=users(),ss=staff(),rs=records();
+const filteredUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.userSearch));
+const filteredCsvUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.csvUserSearch||""));
+const daily=rs.filter(r=>r.date===state.date),total=daily.reduce((s,r)=>s+r.minutes,0),unique=new Set(daily.map(r=>r.user)).size,avg=daily.length?Math.round(total/daily.length):0;
+const dailyTotals=group(daily,r=>r.user),monthRs=rs.filter(r=>r.date.startsWith(state.date.slice(0,7))),monthTotals=group(monthRs,r=>r.user);
+const target=state.filterUser==="全員"?rs:rs.filter(r=>r.user===state.filterUser);
+const achDaily=group(target,r=>r.date),achWeekly=group(target,r=>{const w=weekRange(r.date);return `${w.start}〜${w.end}`}),achMonthly=group(target,r=>r.date.slice(0,7)),achUser=group(rs,r=>r.user);
+const current=state.tab==="日別"?achDaily:state.tab==="週別"?achWeekly:state.tab==="月間"?achMonthly:achUser;
+
+root.innerHTML=`
+<div class="app">
+<div class="header">
+  <div>
+    <h1>看護記録・時間積算アプリ Ver5.4</h1>
+    <p>${h(facility().name)} <span class="badge">${isAdmin()?"管理者画面":"職員画面"}</span></p>
+    <p class="muted">${isAdmin()?"管理者は削除・マスタ管理・CSV出力ができるよ。":"職員は入室・退室・記録入力・修正ができるよ。削除は不可。"}</p>
+  </div>
+
+  <div class="actions">
+    <button class="outline" onclick="logout()">ログアウト</button>
+  </div>
+</div>
+
+<div class="grid">
+<section class="card ${isAdmin()?"":"full"}">
+<h2>職員入力画面</h2>
+<div class="form4">
+<label>日付<input id="date" type="date" value="${h(state.date)}" onchange="state.date=this.value;save();render()"></label>
+<label>利用者検索<input placeholder="名前・居室で検索" value="${h(state.userSearch)}" oninput="state.userSearch=this.value;save();render()"></label>
+<label>利用者様<select id="selectedUser" onchange="state.selectedUser=this.value;save();render()"><option value="">選択してください</option>${filteredUsers.map(u=>`<option value="${h(u.name)}" ${state.selectedUser===u.name?"selected":""}>${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
+<label>職員名<select id="staffName" onchange="onStaffChange()">${ss.map(s=>`<option value="${h(s.name)}" ${state.selectedStaff===s.name?"selected":""}>${h(s.name)}（${h(s.job)}）</option>`).join("")}</select></label>
+</div>
+
+<div class="form2"><button onclick="startVisit()" ${state.active?"disabled":""}>入室</button><button class="outline" onclick="endVisit()" ${!state.active?"disabled":""}>退室</button></div>
+
+<label>内容<select id="content" onchange="state.content=this.value;save();render()">${state.contentMaster.map(o=>`<option value="${h(o)}" ${state.content===o?"selected":""}>${h(o)}</option>`).join("")}</select></label>
+${state.content==="その他"?`<input id="custom" placeholder="その他の内容" value="${h(state.custom)}">`:""}
+
+${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${h(state.active.staff)}（${h(state.active.job)}）/ 開始 ${h(state.active.startTime)}</div>`:""}
+
+<div class="form5">
+<input id="temperature" type="number" step="0.1" placeholder="体温" value="${h(state.vitals.temperature||"36.5")}">
+<input id="systolic" placeholder="血圧 上" value="${h(state.vitals.systolic)}">
+<input id="diastolic" placeholder="血圧 下" value="${h(state.vitals.diastolic)}">
+<input id="pulse" placeholder="脈拍" value="${h(state.vitals.pulse)}">
+<input id="spo2" type="number" step="1" min="0" max="100" placeholder="SpO2" value="${h(state.vitals.spo2||"95")}">
+</div>
+<textarea id="memo" placeholder="記録欄・申し送り・特記事項">${h(state.vitals.memo)}</textarea>
+</section>
+
+${isAdmin()?`
+<section class="card"><h2>日別・月間別累計</h2><h3>日別</h3>${Object.entries(dailyTotals).map(([u,s])=>`<div class="mini"><b>${h(u)}</b><span>${s.visits}回 / ${fmt(s.minutes)}</span></div>`).join("")||`<p class="muted">この日の記録はないよ。</p>`}<h3>月間</h3>${Object.entries(monthTotals).map(([u,s])=>`<div class="mini"><b>${h(u)}</b><span>${s.visits}回 / ${fmt(s.minutes)}</span></div>`).join("")||`<p class="muted">この月の記録はないよ。</p>`}</section>
+
+<section class="card"><h2>利用者マスタ管理</h2><div class="master"><input id="newUserName" placeholder="利用者名"><input id="newUserRoom" placeholder="居室"><button onclick="addUser()">追加</button></div>${us.map(u=>`<div class="row"><div><b>${h(u.name)}</b><p>居室：${h(u.room||"未設定")} / ${h(u.status)}</p></div><button class="icon danger" onclick="deleteUser(${u.id})">削除</button></div>`).join("")}</section>
+
+<section class="card"><h2>職員マスタ管理</h2><div class="master"><input id="newStaffName" placeholder="職員名"><select id="newStaffJob">${JOBS.map(j=>`<option value="${h(j)}">${h(j)}</option>`).join("")}</select><button onclick="addStaff()">追加</button></div>${ss.map(s=>`<div class="row"><div><b>${h(s.name)}</b><p>職種：${h(s.job)}</p></div><button class="icon danger" onclick="deleteStaff(${s.id})">削除</button></div>`).join("")}</section>
+
+<section class="card"><h2>内容マスタ管理</h2><div class="master"><input id="newContent" placeholder="内容項目を追加"><span></span><button onclick="addContent()">追加</button></div>${state.contentMaster.map(c=>`<div class="row"><div><b>${h(c)}</b></div><button class="icon danger" onclick="deleteContent('${h(c)}')">削除</button></div>`).join("")}</section>
+`:""}
+
+<section class="card full"><h2>${isAdmin()?"記録一覧・修正・削除":"記録一覧・修正"}</h2><div class="table-wrap"><table><thead><tr><th>日付</th><th>訪問</th><th>利用者</th><th>職員名</th><th>職種</th><th>内容</th><th>時間</th><th>バイタル</th><th>記録</th><th>操作</th></tr></thead><tbody>${rs.map(recordRow).join("")}</tbody></table></div></section>
+
+${isAdmin()?`
+<section class="card full"><h2>実績確認</h2><div class="summary"><div><small>本日の訪問数</small><b>${daily.length}回</b></div><div><small>合計時間</small><b>${fmt(total)}</b></div><div><small>対応利用者数</small><b>${unique}名</b></div><div><small>平均対応時間</small><b>${avg}分</b></div></div>
+${csvPanelHtml(filteredCsvUsers)}
+<label>利用者絞り込み<select id="filterUser" onchange="state.filterUser=this.value;save();render()"><option value="全員">全員</option>${us.map(u=>`<option value="${h(u.name)}" ${state.filterUser===u.name?"selected":""}>${h(u.name)}</option>`).join("")}</select></label>
+<div class="tabs">${["日別","週別","月間","利用者別"].map(t=>`<button class="${state.tab===t?"active":""}" onclick="state.tab='${t}';save();render()">${t}</button>`).join("")}</div>
+<div class="table-wrap"><table><thead><tr><th>${state.tab==="日別"?"日付":state.tab==="週別"?"週":state.tab==="月間"?"月":"利用者様"}</th><th>訪問回数</th><th>累積介入時間</th></tr></thead><tbody>${Object.entries(current).map(([k,s])=>`<tr><td>${h(k)}</td><td>${s.visits}回</td><td>${fmt(s.minutes)}</td></tr>`).join("")}</tbody></table></div></section>
+<div class="full" style="text-align:right"><button class="outline" onclick="resetAll()">全データ初期化</button></div>
+`:""}
+</div></div>`;
+}
+render();
+</script>
+</body>
+</html>
