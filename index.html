@@ -207,7 +207,12 @@ function addStaff(){if(!isAdmin())return;const name=document.getElementById("new
 function addContent(){if(!isAdmin())return;const v=document.getElementById("newContent").value.trim();if(!v)return;if(!state.contentMaster.includes(v))state.contentMaster.push(v);save();render()}
 function deleteContent(v){if(!isAdmin())return;if(confirm(`${v} を削除する？`)){state.contentMaster=state.contentMaster.filter(x=>x!==v);if(state.content===v)state.content=state.contentMaster[0]||"その他";save();render()}}
 async function deleteUser(id){
-  if(!isAdmin()) return;
+  alert("削除ボタンは反応してるよ。id=" + id);
+
+  if(!isAdmin()){
+    alert("管理者ではないため削除できません");
+    return;
+  }
 
   if(!confirm("利用者を削除する？")) return;
 
