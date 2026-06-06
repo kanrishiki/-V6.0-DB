@@ -74,11 +74,11 @@ async function testSupabaseConnection(){
     .limit(1);
 
   if (error) {
-    alert("Supabase接続エラー: " + error.message);
+alert("Supabase接続エラー: " + error.message);
     return;
   }
 
-  alert("Supabase接続成功！");
+alert("Supabase接続成功！");
 }
 async function loadPatientsFromSupabase(){
   const { data, error } = await supabaseClient
@@ -90,7 +90,7 @@ async function loadPatientsFromSupabase(){
     alert("利用者読込エラー: " + error.message);
     return;
   }
-
+alert("利用者読込成功: " + data.length + "件");
   state.users = data.map(p => ({
     id: p.id,
     facilityId: state.facilityId,
