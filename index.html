@@ -438,7 +438,26 @@ r.date=document.getElementById(`ed-date-${id}`).value;r.user=document.getElement
 r.vitals.temperature=document.getElementById(`ed-temp-${id}`).value;r.vitals.systolic=document.getElementById(`ed-sys-${id}`).value;r.vitals.diastolic=document.getElementById(`ed-dia-${id}`).value;r.vitals.pulse=document.getElementById(`ed-pulse-${id}`).value;r.vitals.spo2=document.getElementById(`ed-spo2-${id}`).value;r.vitals.memo=document.getElementById(`ed-memo-${id}`).value;
 state.editingId=null;save();render();
 }
-function deleteRecord(id){if(!isAdmin())return;if(confirm("この記録を削除する？")){state.records=state.records.filter(r=>r.id!==id);save();render()}}
+async function deleteRecord(id){
+
+  if(!isAdmin()) return;
+
+  if(!confirm("この記録を削除する？")) return;
+
+  const { error } = await supabaseClient
+    .from("nursing_records")
+    .delete()
+    .eq("id", id);
+
+  if(error){
+    alert("記録削除エラー: " + error.message);
+    return;
+  }
+
+  alert("記録削除成功");
+
+  await loadRecordsFromSupabase();
+}
 
 function csv(list,name){
 if(!isAdmin())return;
@@ -475,7 +494,7 @@ return`
 <tr>
 <td>${h(r.date)}</td><td>${h(r.visitNo)}回目</td><td>${h(r.user)}</td><td>${h(r.staff)}</td><td><span class="badge">${h(r.job)}</span></td><td>${h(r.content)}</td><td>${h(r.startTime)}〜${h(r.endTime)}<br>${h(r.minutes)}分</td>
 <td>BT ${h(r.vitals.temperature)} / BP ${h(r.vitals.systolic)}-${h(r.vitals.diastolic)} / P ${h(r.vitals.pulse)} / SpO2 ${h(r.vitals.spo2)}</td>
-<td>${h(r.vitals.memo)}</td><td><button class="icon" onclick="beginEdit(${r.id})">修正</button>${isAdmin()?`<button class="icon danger" onclick="deleteRecord(${r.id})">削除</button>`:""}</td>
+<td>${h(r.vitals.memo)}</td><td><button class="icon" onclick="beginEdit(${r.id})">修正</button>${isAdmin()?`<button class="icon danger" onclick="deleteRecord('${r.id}')">削除</button>`:""}</td>
 </tr>`;
 }
 
