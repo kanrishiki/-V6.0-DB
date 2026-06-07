@@ -530,12 +530,40 @@ async function deleteRecord(id){
 }
 
 function csv(list,name){
-if(!isAdmin())return;
-const header=["拠点","日付","訪問回数","利用者名","職員名","職種","内容","開始時間","終了時間","合計分","体温","血圧上","血圧下","脈拍","SpO2","メモ"];
-const rows=list.map(r=>[facility().name,r.date,r.visitNo,r.user,r.staff,r.job,r.content,r.startTime,r.endTime,r.minutes,r.vitals.temperature,r.vitals.systolic,r.vitals.diastolic,r.vitals.pulse,r.vitals.spo2,r.vitals.memo]);
-const text=[header,...rows].map(row=>row.map(c=>`"${String(c??"").replaceAll('"','""')}"`).join(",")).join("\n");
-const blob=new Blob(["\uFEFF"+text],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
-a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+  if(!isAdmin()) return;
+
+  const header = [
+    "日付",
+    "訪問回数",
+    "名前",
+    "開始",
+    "終了",
+    "合計分数"
+  ];
+
+  const rows = list.map(r => [
+    r.date,
+    r.visitNo + "回目",
+    r.user,
+    r.startTime,
+    r.endTime,
+    r.minutes
+  ]);
+
+  const text = [header, ...rows]
+    .map(row => row.map(c => `"${String(c ?? "").replaceAll('"','""')}"`).join(","))
+    .join("\n");
+
+  const blob = new Blob(["\uFEFF" + text], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 function dailyCSV(){state.csvPanel="daily";save();render()}
 function weeklyCSV(){state.csvPanel="weekly";save();render()}
@@ -661,6 +689,12 @@ ${isAdmin()?`
 
 ${isAdmin()?`
 <section class="card full"><h2>実績確認</h2><div class="summary"><div><small>本日の訪問数</small><b>${daily.length}回</b></div><div><small>合計時間</small><b>${fmt(total)}</b></div><div><small>対応利用者数</small><b>${unique}名</b></div><div><small>平均対応時間</small><b>${avg}分</b></div></div>
+<div class="actions" style="margin-bottom:12px;">
+  <button onclick="dailyCSV()">日別CSV</button>
+  <button onclick="weeklyCSV()">週別CSV</button>
+  <button onclick="monthlyCSV()">月別CSV</button>
+  <button onclick="userCSV()">利用者別CSV</button>
+</div>
 ${csvPanelHtml(filteredCsvUsers)}
 <label>利用者絞り込み<select id="filterUser" onchange="state.filterUser=this.value;save();render()"><option value="全員">全員</option>${us.map(u=>`<option value="${h(u.name)}" ${state.filterUser===u.name?"selected":""}>${h(u.name)}</option>`).join("")}</select></label>
 <div class="tabs">${["日別","週別","月間","利用者別"].map(t=>`<button class="${state.tab===t?"active":""}" onclick="state.tab='${t}';save();render()">${t}</button>`).join("")}</div>
