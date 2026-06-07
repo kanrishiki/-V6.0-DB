@@ -143,6 +143,27 @@ await loadPatientsFromSupabase();
 await loadStaffFromSupabase();
 await loadContentFromSupabase();
 await loadRecordsFromSupabase();
+function setupRealtimeSync(){
+  supabaseClient
+    .channel("nursing_records_realtime")
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "nursing_records"
+      },
+      async (payload) => {
+        console.log("Realtime change:", payload);
+
+        await loadRecordsFromSupabase();
+      }
+    )
+    .subscribe((status) => {
+      console.log("Realtime status:", status);
+    });
+}
+setupRealtimeSync();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
