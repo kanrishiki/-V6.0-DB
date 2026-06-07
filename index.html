@@ -132,17 +132,31 @@ root.innerHTML=`
 </div></div>`;
 }
 async function login(){
-const fid=document.getElementById("loginFacility").value,type=document.getElementById("loginType").value,pw=document.getElementById("loginPassword").value;
-if(type==="staff"&&pw!==STAFF_PASSWORD)return alert("職員パスワードは staff1234");
-if(type==="admin"&&pw!==ADMIN_PASSWORD)return alert("管理者パスワードは admin1234");
-state.facilityId=fid;state.login=type;
-state.selectedUser=users()[0]?.name||"";
-const s=staff()[0];state.selectedStaff=s?.name||"";state.selectedJob=s?.job||"看護師";
-save();
-await loadPatientsFromSupabase();
-await loadStaffFromSupabase();
-await loadContentFromSupabase();
-await loadRecordsFromSupabase();
+  const fid=document.getElementById("loginFacility").value,
+        type=document.getElementById("loginType").value,
+        pw=document.getElementById("loginPassword").value;
+
+  if(type==="staff"&&pw!==STAFF_PASSWORD) return alert("職員パスワードは staff1234");
+  if(type==="admin"&&pw!==ADMIN_PASSWORD) return alert("管理者パスワードは admin1234");
+
+  state.facilityId=fid;
+  state.login=type;
+  state.selectedUser=users()[0]?.name||"";
+
+  const s=staff()[0];
+  state.selectedStaff=s?.name||"";
+  state.selectedJob=s?.job||"看護師";
+
+  save();
+
+  await loadPatientsFromSupabase();
+  await loadStaffFromSupabase();
+  await loadContentFromSupabase();
+  await loadRecordsFromSupabase();
+
+  setupRealtimeSync();
+}
+
 function setupRealtimeSync(){
   supabaseClient
     .channel("nursing_records_realtime")
@@ -155,7 +169,6 @@ function setupRealtimeSync(){
       },
       async (payload) => {
         console.log("Realtime change:", payload);
-
         await loadRecordsFromSupabase();
       }
     )
@@ -163,8 +176,8 @@ function setupRealtimeSync(){
       console.log("Realtime status:", status);
     });
 }
-  async function refreshData(){
 
+async function refreshData(){
   alert("同期開始");
 
   await loadPatientsFromSupabase();
@@ -173,9 +186,6 @@ function setupRealtimeSync(){
   await loadRecordsFromSupabase();
 
   alert("同期完了");
-
-}
-setupRealtimeSync();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
