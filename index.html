@@ -165,10 +165,14 @@ function setupRealtimeSync(){
 }
   async function refreshData(){
 
+  alert("同期開始");
+
   await loadPatientsFromSupabase();
   await loadStaffFromSupabase();
   await loadContentFromSupabase();
   await loadRecordsFromSupabase();
+
+  alert("同期完了");
 
 }
 setupRealtimeSync();
