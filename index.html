@@ -163,6 +163,14 @@ function setupRealtimeSync(){
       console.log("Realtime status:", status);
     });
 }
+  async function refreshData(){
+
+  await loadPatientsFromSupabase();
+  await loadStaffFromSupabase();
+  await loadContentFromSupabase();
+  await loadRecordsFromSupabase();
+
+}
 setupRealtimeSync();
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
@@ -644,6 +652,7 @@ root.innerHTML=`
   </div>
 
   <div class="actions">
+ 　 <button class="outline" onclick="refreshData()">同期</button>
     <button class="outline" onclick="logout()">ログアウト</button>
   </div>
 </div>
