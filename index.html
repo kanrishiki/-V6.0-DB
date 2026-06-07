@@ -250,7 +250,7 @@ async function loadRecordsFromSupabase(){
     startTime: r.start_time,
     endTime: r.end_time,
     minutes: r.total_minutes || 0,
-    visitNo: 1,
+    visitNo: 0,
     vitals:{
       temperature: r.temperature || "",
       systolic: r.systolic || "",
@@ -260,7 +260,18 @@ async function loadRecordsFromSupabase(){
       memo: r.memo || ""
     }
   }));
+const visitCountMap = {};
 
+state.records
+  .sort((a,b) => {
+    if(a.date !== b.date) return a.date.localeCompare(b.date);
+    return (a.startTime || "").localeCompare(b.startTime || "");
+  })
+  .forEach(r => {
+    const key = `${r.date}_${r.user}`;
+    visitCountMap[key] = (visitCountMap[key] || 0) + 1;
+    r.visitNo = visitCountMap[key];
+  });
   alert("記録読込成功: " + data.length + "件");
 
   save();
