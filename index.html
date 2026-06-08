@@ -32,8 +32,8 @@ const FACILITY_IDS = {
   kawaguchi: "8d82c017-10e2-4ea8-a0d5-4cffda56f327",
   shiki: "e548e835-50c8-472f-b942-7125b213921d"
 };
-const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",KEY="nursing_record_v54";
-  const MASTER_PASSWORD = "master1234";
+const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",MASTER_PASSWORD="master1234",KEY="nursing_record_v54";
+
 const JOBS=["看護師","准看護師","PT","OT","ST"];
 
 let state=load();
@@ -123,7 +123,11 @@ root.innerHTML=`
 <h1>看護記録・時間積算アプリ Ver6.0-DB</h1>
 <p class="muted">CSV条件選択対応版。</p>
 <label>ログイン拠点<select id="loginFacility">${FACILITIES.map(f=>`<option value="${f.id}" ${state.facilityId===f.id?"selected":""}>${h(f.name)}</option>`).join("")}</select></label>
-<label>ログイン種別<select id="loginType"><option value="staff">職員ログイン</option><option value="admin">管理者ログイン</option></select></label><option value="master">マスター管理者ログイン</option>
+<label>ログイン種別<select id="loginType">
+  <option value="staff">職員ログイン</option>
+  <option value="admin">管理者ログイン</option>
+  <option value="master">マスター管理者ログイン</option>
+</select>
 <label>パスワード
 <input 
   id="loginPassword" 
