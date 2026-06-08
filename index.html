@@ -69,16 +69,41 @@ function h(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;
 function now(){return new Date().toTimeString().slice(0,5)}
 function fmt(m){return `${Math.floor(m/60)}時間 ${m%60}分`}
 function mins(s,e){if(!s||!e)return 0;const[sh,sm]=s.split(":").map(Number),[eh,em]=e.split(":").map(Number);return Math.max(0,eh*60+em-(sh*60+sm))}
-function facility(){return FACILITIES.find(f=>f.id===state.facilityId)}
-function users(){return state.users.filter(u=>u.facilityId===state.facilityId)}
-function staff(){return state.staff.filter(s=>s.facilityId===state.facilityId)}
-function records(){return state.records.filter(r=>r.facilityId===state.facilityId)}
 function isMaster(){
   return state.login==="master";
 }
 
 function isAdmin(){
   return state.login==="admin" || state.login==="master";
+}
+
+function currentFacilityFilter(){
+  if(isMaster()){
+    return state.masterFacility || "all";
+  }
+  return state.facilityId;
+}
+
+function facility(){
+  return FACILITIES.find(f=>f.id===state.facilityId);
+}
+
+function users(){
+  const filter=currentFacilityFilter();
+  if(filter==="all") return state.users;
+  return state.users.filter(u=>u.facilityId===filter);
+}
+
+function staff(){
+  const filter=currentFacilityFilter();
+  if(filter==="all") return state.staff;
+  return state.staff.filter(s=>s.facilityId===filter);
+}
+
+function records(){
+  const filter=currentFacilityFilter();
+  if(filter==="all") return state.records;
+  return state.records.filter(r=>r.facilityId===filter);
 }
 function group(list,keyFn){return list.reduce((a,r)=>{const k=keyFn(r);if(!a[k])a[k]={visits:0,minutes:0};a[k].visits++;a[k].minutes+=Number(r.minutes||0);return a},{})}
 function weekRange(d){const base=new Date(d),day=base.getDay(),diff=day===0?-6:1-day;const mon=new Date(base);mon.setDate(base.getDate()+diff);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const y=x=>x.toISOString().slice(0,10);return{start:y(mon),end:y(sun)}}
