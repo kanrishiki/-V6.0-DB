@@ -33,6 +33,7 @@ const FACILITY_IDS = {
   shiki: "e548e835-50c8-472f-b942-7125b213921d"
 };
 const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",KEY="nursing_record_v54";
+  const MASTER_PASSWORD = "master1234";
 const JOBS=["看護師","准看護師","PT","OT","ST"];
 
 let state=load();
@@ -72,7 +73,13 @@ function facility(){return FACILITIES.find(f=>f.id===state.facilityId)}
 function users(){return state.users.filter(u=>u.facilityId===state.facilityId)}
 function staff(){return state.staff.filter(s=>s.facilityId===state.facilityId)}
 function records(){return state.records.filter(r=>r.facilityId===state.facilityId)}
-function isAdmin(){return state.login==="admin"}
+function isMaster(){
+  return state.login==="master";
+}
+
+function isAdmin(){
+  return state.login==="admin" || state.login==="master";
+}
 function group(list,keyFn){return list.reduce((a,r)=>{const k=keyFn(r);if(!a[k])a[k]={visits:0,minutes:0};a[k].visits++;a[k].minutes+=Number(r.minutes||0);return a},{})}
 function weekRange(d){const base=new Date(d),day=base.getDay(),diff=day===0?-6:1-day;const mon=new Date(base);mon.setDate(base.getDate()+diff);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const y=x=>x.toISOString().slice(0,10);return{start:y(mon),end:y(sun)}}
 async function testSupabaseConnection(){
@@ -116,7 +123,7 @@ root.innerHTML=`
 <h1>看護記録・時間積算アプリ Ver6.0-DB</h1>
 <p class="muted">CSV条件選択対応版。</p>
 <label>ログイン拠点<select id="loginFacility">${FACILITIES.map(f=>`<option value="${f.id}" ${state.facilityId===f.id?"selected":""}>${h(f.name)}</option>`).join("")}</select></label>
-<label>ログイン種別<select id="loginType"><option value="staff">職員ログイン</option><option value="admin">管理者ログイン</option></select></label>
+<label>ログイン種別<select id="loginType"><option value="staff">職員ログイン</option><option value="admin">管理者ログイン</option></select></label><option value="master">マスター管理者ログイン</option>
 <label>パスワード
 <input 
   id="loginPassword" 
@@ -138,7 +145,8 @@ async function login(){
 
   if(type==="staff"&&pw!==STAFF_PASSWORD) return alert("職員パスワードは staff1234");
   if(type==="admin"&&pw!==ADMIN_PASSWORD) return alert("管理者パスワードは admin1234");
-
+  if(type==="master"&&pw!==MASTER_PASSWORD) return alert("マスターパスワードは master1234");
+  
   state.facilityId=fid;
   state.login=type;
   state.selectedUser=users()[0]?.name||"";
