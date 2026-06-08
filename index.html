@@ -595,8 +595,68 @@ function closeCsvPanel(){state.csvPanel="";save();render()}
 function exportDailyCSV(){const d=document.getElementById("csvDailyDate")?.value||state.date;csv(records().filter(r=>r.date===d),`日別CSV_${facility().short}_${d}.csv`)}
 function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.value||state.date,w=weekRange(d);csv(records().filter(r=>r.date>=w.start&&r.date<=w.end),`週別CSV_${facility().short}_${w.start}_${w.end}.csv`)}
 function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
-function exportUserCSV(){const u=document.getElementById("csvUserSelect")?.value||"全員";if(u==="全員"){csv(records(),`利用者別CSV_${facility().short}_全員.csv`);return}csv(records().filter(r=>r.user===u),`利用者別CSV_${facility().short}_${u}.csv`)}
+function exportUserCSV(){
+  const u=document.getElementById("csvUserSelect")?.value||"全員";
 
+  if(u==="全員"){
+    alert("印刷用は利用者を1名選んでね");
+    return;
+  }
+
+  const list=records()
+    .filter(r=>r.user===u)
+    .sort((a,b)=>{
+      if(a.date!==b.date) return a.date.localeCompare(b.date);
+      return (a.startTime||"").localeCompare(b.startTime||"");
+    });
+
+  const header=[
+    "日付",
+    "訪問回数",
+    "職員",
+    "職種",
+    "内容",
+    "開始",
+    "終了",
+    "合計分数",
+    "記録"
+  ];
+
+  const rows=list.map(r=>[
+    r.date,
+    r.visitNo+"回目",
+    r.staff,
+    r.job,
+    r.content,
+    r.startTime,
+    r.endTime,
+    r.minutes,
+    r.vitals?.memo||""
+  ]);
+
+  const totalMinutes=list.reduce((sum,r)=>sum+Number(r.minutes||0),0);
+
+  const summary=[
+    [],
+    ["利用者名",u],
+    ["総訪問回数",list.length+"回"],
+    ["累積時間",totalMinutes+"分"]
+  ];
+
+  const text=[...summary,[],header,...rows]
+    .map(row=>row.map(c=>`"${String(c??"").replaceAll('"','""')}"`).join(","))
+    .join("\n");
+
+  const blob=new Blob(["\uFEFF"+text],{type:"text/csv;charset=utf-8;"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+
+  a.href=url;
+  a.download=`利用者別記録_${facility().short}_${u}.csv`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
 function recordRow(r){
 if(state.editingId===r.id)return`
 <tr>
