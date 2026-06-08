@@ -146,7 +146,7 @@ function renderLogin(){
 root.innerHTML=`
 <div class="login"><div class="login-card">
 <h1>看護記録・時間積算アプリ Ver6.5-MRT</h1>
-<p class="muted">CSV条件選択対応版。</p>
+<p class="muted">CSV条件選択・リアルタイム同期対応版</p>
 <label>ログイン拠点<select id="loginFacility">${FACILITIES.map(f=>`<option value="${f.id}" ${state.facilityId===f.id?"selected":""}>${h(f.name)}</option>`).join("")}</select></label>
 <label>ログイン種別<select id="loginType">
   <option value="staff">職員ログイン</option>
