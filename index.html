@@ -183,7 +183,15 @@ async function login(){
   const s=staff()[0];
   state.selectedStaff=s?.name||"";
   state.selectedJob=s?.job||"看護師";
-
+  
+　state.vitals={
+  temperature:"",
+  systolic:"",
+  diastolic:"",
+  pulse:"",
+  spo2:"",
+  memo:""
+};
   save();
 
   await loadPatientsFromSupabase();
