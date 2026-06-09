@@ -32,7 +32,30 @@ const FACILITY_IDS = {
   kawaguchi: "8d82c017-10e2-4ea8-a0d5-4cffda56f327",
   shiki: "e548e835-50c8-472f-b942-7125b213921d"
 };
-const STAFF_PASSWORD="staff1234",ADMIN_PASSWORD="admin1234",MASTER_PASSWORD="master1234",KEY="nursing_record_v54";
+const PASSWORDS = {
+  kamagaya: {
+    staff: "ST.kamagaya",
+    admin: "AD.kamagaya"
+  },
+  kawaguchi: {
+    staff: "ST.kawaguchi",
+    admin: "AD.kawaguchi"
+  },
+  shiki: {
+    staff: "ST.shiki",
+    admin: "AD.shiki"
+  },
+  kanazawa: {
+    staff: "ST.kanazawa",
+    admin: "AD.kanazawa"
+  },
+  ichinomiya: {
+    staff: "ST.ichinomiya",
+    admin: "AD.ichinomiya"
+  }
+};,
+MASTER_PASSWORD="WH.master",
+KEY="nursing_record_v54";
 
 const JOBS=["看護師","准看護師","PT","OT","ST"];
 
@@ -171,9 +194,14 @@ async function login(){
         type=document.getElementById("loginType").value,
         pw=document.getElementById("loginPassword").value;
 
-  if(type==="staff"&&pw!==STAFF_PASSWORD) return alert("職員パスワードは staff1234");
-  if(type==="admin"&&pw!==ADMIN_PASSWORD) return alert("管理者パスワードは admin1234");
-  if(type==="master"&&pw!==MASTER_PASSWORD) return alert("マスターパスワードは master1234");
+const facilityPasswords = PASSWORDS[fid];
+
+if(type==="staff" && pw!==facilityPasswords.staff){
+  return alert("職員パスワードが違います");}
+if(type==="admin" && pw!==facilityPasswords.admin){
+  return alert("管理者パスワードが違います");}
+if(type==="master" && pw!==MASTER_PASSWORD){
+  return alert("マスターパスワードが違います");}
   
   state.facilityId=fid;
   state.login=type;
