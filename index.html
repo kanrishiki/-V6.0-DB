@@ -177,13 +177,17 @@ root.innerHTML=`
 </select>
 <label>パスワード
 <input 
-  id="loginPassword" 
-  type="password" 
-  placeholder="職員: staff1234 / 管理者: admin1234 / マスター: master1234"
+ <input
+  id="loginPassword"
+  type="password"
+  placeholder="パスワード">
   onkeydown="if(event.key==='Enter'){login()}"
 >
 </label>
 <button onclick="login()">ログイン</button>
+<p class="muted">
+拠点ごとに設定された職員・管理者パスワードを入力してください
+</p>
 <button class="outline" onclick="loadPatientsFromSupabase()">利用者読込テスト</button>
 <button class="outline" onclick="testSupabaseConnection()">Supabase接続テスト</button>
 <p class="muted">職員：入力・修正のみ / 管理者：削除・マスタ・CSV可/ マスター：全拠点全権限</p>
