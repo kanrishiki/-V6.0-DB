@@ -814,11 +814,11 @@ ${state.content==="その他"?`<input id="custom" placeholder="その他の内�
 ${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${h(state.active.staff)}（${h(state.active.job)}）/ 開始 ${h(state.active.startTime)}</div>`:""}
 
 <div class="form5">
-<input id="temperature" type="number" step="0.1" min="36.5" placeholder="36.5" value="${h(state.vitals.temperature||"")}">
+<input id="temperature"type="number"step="0.1"placeholder="36.5"value="${h(state.vitals.temperature||"")}"onfocus="if(this.value==='')this.value='36.5'">
 <input id="systolic" placeholder="血圧 上" value="${h(state.vitals.systolic)}">
 <input id="diastolic" placeholder="血圧 下" value="${h(state.vitals.diastolic)}">
 <input id="pulse" placeholder="脈拍" value="${h(state.vitals.pulse)}">
-<input id="spo2" type="number" step="1" min="95" max="100" placeholder="95" value="${h(state.vitals.spo2||"")}">
+<input id="spo2" type="number" step="1" min="0" max="100" placeholder="95" value="${h(state.vitals.spo2||"")}" onfocus="if(this.value==='')this.value='95'">
 </div>
 <textarea id="memo" placeholder="記録欄・申し送り・特記事項">${h(state.vitals.memo)}</textarea>
 </section>
