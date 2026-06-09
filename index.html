@@ -130,7 +130,6 @@ async function loadPatientsFromSupabase(){
     alert("利用者読込エラー: " + error.message);
     return;
   }
-alert("利用者読込成功: " + data.length + "件");
   state.users = data.map(p => ({
     id: p.id,
     facilityId: state.facilityId,
@@ -223,7 +222,6 @@ function setupRealtimeSync(){
 }
 
 async function refreshData(){
-  alert("同期開始");
 
   await loadPatientsFromSupabase();
   await loadStaffFromSupabase();
@@ -339,7 +337,6 @@ state.records
     visitCountMap[key] = (visitCountMap[key] || 0) + 1;
     r.visitNo = visitCountMap[key];
   });
-  alert("記録読込成功: " + data.length + "件");
 
   save();
   render();
@@ -434,8 +431,6 @@ async function loadStaffFromSupabase(){
     job: s.job
   }));
 
-  alert("職員読込成功: " + data.length + "件");
-
   save();
   render();
 }
@@ -452,8 +447,6 @@ async function loadContentFromSupabase(){
   }
 
   state.contentMaster = data.map(c => c.content_name);
-
-  alert("内容読込成功: " + data.length + "件");
 
   save();
   render();
@@ -475,8 +468,6 @@ async function addContent(){
     alert("内容追加エラー: " + error.message);
     return;
   }
-
-  alert("内容追加成功");
 
   await loadContentFromSupabase();
 }
