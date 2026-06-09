@@ -236,11 +236,11 @@ state.selectedJob=s?.job||"看護師";
 state.content=document.getElementById("content")?.value||state.content;
 state.custom=document.getElementById("custom")?.value||"";
 state.vitals={
-temperature:document.getElementById("temperature")?.value||"36.5",
+temperature:document.getElementById("temperature")?.value||"",
 systolic:document.getElementById("systolic")?.value||"",
 diastolic:document.getElementById("diastolic")?.value||"",
 pulse:document.getElementById("pulse")?.value||"",
-spo2:document.getElementById("spo2")?.value||"95",
+spo2:document.getElementById("spo2")?.value||"",
 memo:document.getElementById("memo")?.value||""
 };save();
 }
@@ -347,7 +347,14 @@ const supabaseId = await saveRecordToSupabase(record);
 if(supabaseId){
   record.id = supabaseId;
 }
-state.active=null;state.vitals={temperature:"36.5",systolic:"",diastolic:"",pulse:"",spo2:"95",memo:""};
+state.active=null;state.vitals={
+  temperature:"",
+  systolic:"",
+  diastolic:"",
+  pulse:"",
+  spo2:"",
+  memo:""
+};
 save();render();
 }
 async function addUser(){
@@ -799,11 +806,11 @@ ${state.content==="その他"?`<input id="custom" placeholder="その他の内�
 ${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${h(state.active.staff)}（${h(state.active.job)}）/ 開始 ${h(state.active.startTime)}</div>`:""}
 
 <div class="form5">
-<input id="temperature" type="number" step="0.1" placeholder="体温" value="${h(state.vitals.temperature||"36.5")}">
+<input id="temperature" type="number" step="0.1" placeholder="36.5" value="${h(state.vitals.temperature||"")}">
 <input id="systolic" placeholder="血圧 上" value="${h(state.vitals.systolic)}">
 <input id="diastolic" placeholder="血圧 下" value="${h(state.vitals.diastolic)}">
 <input id="pulse" placeholder="脈拍" value="${h(state.vitals.pulse)}">
-<input id="spo2" type="number" step="1" min="0" max="100" placeholder="SpO2" value="${h(state.vitals.spo2||"95")}">
+<input id="spo2" type="number" step="1" min="0" max="100" placeholder="95" value="${h(state.vitals.spo2||"")}">
 </div>
 <textarea id="memo" placeholder="記録欄・申し送り・特記事項">${h(state.vitals.memo)}</textarea>
 </section>
