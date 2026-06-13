@@ -895,18 +895,17 @@ ${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${
 
 ${isAdmin()?`
 <section class="card">
-
 <h2>日別累計</h2>
-
 <label>表示日付
 <input
 type="date"
 value="${h(state.summaryDate)}"
 onchange="state.summaryDate=this.value;save();render()">
 </label>
+<div class="summary-scroll">
 ${Object.entries(summaryTotals).length
 ? Object.entries(summaryTotals).map(([u,s])=>`<div class="mini"><b>${h(u)}</b>
-<span>${s.visits}回 / ${fmt(s.minutes)}</span></div>`).join(""): `<p class="muted">この日の記録はないよ。</p>`}</section>
+<span>${s.visits}回 / ${fmt(s.minutes)}</span></div>`).join(""): `<p class="muted">この日の記録はないよ。</p>`}</div></section>
 
 <section class="card"><h2>利用者マスタ管理</h2><div class="master"><input id="newUserName" placeholder="利用者名"><input id="newUserRoom" placeholder="居室"><button onclick="addUser()">追加</button></div><div class="master-list">
 ${us.map(u=>`
