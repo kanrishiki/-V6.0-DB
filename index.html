@@ -829,7 +829,7 @@ root.innerHTML=`
 <section class="card ${isAdmin()?"":"full"}">
 <h2>職員入力画面</h2>
 <div class="form4">
-<label>日付<input id="date" type="date" value="${h(state.date)}" onchange="state.date=this.value;save();render()"></label>
+<label>日付<input id="date" type="date" value="${h(today())}" disabled></label>
 <label>利用者検索<input placeholder="名前・居室で検索" value="${h(state.userSearch)}" oninput="state.userSearch=this.value;save();render()"></label>
 <label>利用者様<select id="selectedUser" onchange="state.selectedUser=this.value;save();render()"><option value="">選択してください</option>${filteredUsers.map(u=>`<option value="${h(u.name)}" ${state.selectedUser===u.name?"selected":""}>${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
 <label>職員名<select id="staffName" onchange="onStaffChange()">${ss.map(s=>`<option value="${h(s.name)}" ${state.selectedStaff===s.name?"selected":""}>${h(s.name)}（${h(s.job)}）</option>`).join("")}</select></label>
