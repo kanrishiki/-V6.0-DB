@@ -14,6 +14,27 @@
   border-radius:8px;
   padding:4px;
 }
+.content-checks{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:8px;
+  margin:8px 0 12px;
+}
+
+.check-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px;
+  border:1px solid #d1d5db;
+  border-radius:10px;
+  background:#fff;
+  font-size:14px;
+}
+
+.check-item input{
+  width:auto;
+}
 </style>
 </head>
 <body>
@@ -288,6 +309,14 @@ pulse:document.getElementById("pulse")?.value||"",
 spo2:document.getElementById("spo2")?.value||"",
 memo:document.getElementById("memo")?.value||""
 };save();
+}
+  function updateContentChecks(){
+  const checked=[...document.querySelectorAll(".content-checks input:checked")]
+    .map(x=>x.value);
+
+  state.content=checked.join("、");
+  save();
+  render();
 }
 function onStaffChange(){
 const name=document.getElementById("staffName").value,s=staff().find(x=>x.name===name);
@@ -838,8 +867,20 @@ root.innerHTML=`
 
 <div class="form2"><button onclick="startVisit()" ${state.active?"disabled":""}>入室</button><button class="outline" onclick="endVisit()" ${!state.active?"disabled":""}>退室</button></div>
 
-<label>内容<select id="content" onchange="state.content=this.value;save();render()">${state.contentMaster.map(o=>`<option value="${h(o)}" ${state.content===o?"selected":""}>${h(o)}</option>`).join("")}</select></label>
-${state.content==="その他"?`<input id="custom" placeholder="その他の内容" value="${h(state.custom)}">`:""}
+<label>内容</label>
+<div class="content-checks">
+  ${state.contentMaster.map(o=>`
+    <label class="check-item">
+      <input
+        type="checkbox"
+        value="${h(o)}"
+        ${state.content?.split("、").includes(o) ? "checked" : ""}
+        onchange="updateContentChecks()"
+      >
+      ${h(o)}
+    </label>
+  `).join("")}
+</div>
 
 ${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${h(state.active.staff)}（${h(state.active.job)}）/ 開始 ${h(state.active.startTime)}</div>`:""}
 
