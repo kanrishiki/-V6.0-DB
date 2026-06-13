@@ -92,7 +92,7 @@ let state=load();
 function initial(){
 const today=new Date().toISOString().slice(0,10);
 return{
-login:null,facilityId:"kamagaya",date:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
+login:null,facilityId:"kamagaya",date:today,recordFilterDate:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
 userSearch:"",csvPanel:"",csvUserSearch:"",content:"バイタル測定",custom:"",active:null,tab:"日別",filterUser:"全員",
 vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
 contentMaster:["バイタル測定","服薬確認・管理","処置","創部観察","点滴管理","吸引","経管栄養","排泄ケア","リハビリ・機能訓練","状態観察","家族・医師への連絡","看護記録作成","その他"],
@@ -126,37 +126,32 @@ function isMaster(){
 }
 
 function isAdmin(){
-  return state.login==="admin" || state.login==="master";
-}
+  return state.login==="admin" || state.login==="master";}
 
 function currentFacilityFilter(){
   if(isMaster()){
-    return state.masterFacility || "all";
-  }
-  return state.facilityId;
-}
+  return state.masterFacility || "all";}
+  return state.facilityId;}
 
 function facility(){
-  return FACILITIES.find(f=>f.id===state.facilityId);
-}
+  return FACILITIES.find(f=>f.id===state.facilityId);}
 
 function users(){
   const filter=currentFacilityFilter();
   if(filter==="all") return state.users;
-  return state.users.filter(u=>u.facilityId===filter);
-}
+  return state.users.filter(u=>u.facilityId===filter);}
 
 function staff(){
   const filter=currentFacilityFilter();
   if(filter==="all") return state.staff;
-  return state.staff.filter(s=>s.facilityId===filter);
-}
+  return state.staff.filter(s=>s.facilityId===filter);}
 
 function records(){
-  const filter=currentFacilityFilter();
+const filter=currentFacilityFilter();
   if(filter==="all") return state.records;
-  return state.records.filter(r=>r.facilityId===filter);
-}
+  return state.records.filter(r=>r.facilityId===filter);}
+function displayRecords(){
+  return records().filter(r => r.date === state.recordFilterDate);}
 function group(list,keyFn){return list.reduce((a,r)=>{const k=keyFn(r);if(!a[k])a[k]={visits:0,minutes:0};a[k].visits++;a[k].minutes+=Number(r.minutes||0);return a},{})}
 function weekRange(d){const base=new Date(d),day=base.getDay(),diff=day===0?-6:1-day;const mon=new Date(base);mon.setDate(base.getDate()+diff);const sun=new Date(mon);sun.setDate(mon.getDate()+6);const y=x=>x.toISOString().slice(0,10);return{start:y(mon),end:y(sun)}}
 async function testSupabaseConnection(){
@@ -818,7 +813,7 @@ return `<div class="csv-panel"><h3>${title}</h3>${body}<div class="actions">${ac
 
 function render(){
 if(!state.login){renderLogin();return}
-const us=users(),ss=staff(),rs=records();
+const us=users(),ss=staff(),rs=displayRecords();
 const filteredUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.userSearch));
 const filteredCsvUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.csvUserSearch||""));
 const daily=rs.filter(r=>r.date===state.date),total=daily.reduce((s,r)=>s+r.minutes,0),unique=new Set(daily.map(r=>r.user)).size,avg=daily.length?Math.round(total/daily.length):0;
@@ -906,7 +901,15 @@ ${us.map(u=>`
 <section class="card"><h2>内容マスタ管理</h2><div class="master"><input id="newContent" placeholder="内容項目を追加"><span></span><button onclick="addContent()">追加</button></div><div class="master-list">${state.contentMaster.map(c=>`<div class="row"><div><b>${h(c)}</b></div><button class="icon danger" onclick="deleteContent('${h(c)}')">削除</button></div>`).join("")}</section>
 `:""}</div>
 
-<section class="card full"><h2>${isAdmin()?"記録一覧・修正・削除":"記録一覧・修正"}</h2><div class="table-wrap"><table><thead><tr><th>日付</th><th>訪問</th><th>利用者</th><th>職員名</th><th>職種</th><th>内容</th><th>時間</th><th>バイタル</th><th>記録</th><th>操作</th></tr></thead><tbody>${rs.map(recordRow).join("")}</tbody></table></div></section>
+<section class="card full"><h2>${isAdmin()?"記録一覧・修正・削除":"記録一覧・修正"}</h2><div class="form4" style="margin-bottom:10px;">
+  <label>表示日付
+    <input
+      type="date"
+      value="${h(state.recordFilterDate)}"
+      onchange="state.recordFilterDate=this.value;save();render()"
+    >
+  </label>
+</div><div class="table-wrap"><table><thead><tr><th>日付</th><th>訪問</th><th>利用者</th><th>職員名</th><th>職種</th><th>内容</th><th>時間</th><th>バイタル</th><th>記録</th><th>操作</th></tr></thead><tbody>${rs.map(recordRow).join("")}</tbody></table></div></section>
 
 ${isAdmin()?`
 <section class="card full"><h2>実績確認</h2><div class="summary"><div><small>本日の訪問数</small><b>${daily.length}回</b></div><div><small>合計時間</small><b>${fmt(total)}</b></div><div><small>対応利用者数</small><b>${unique}名</b></div><div><small>平均対応時間</small><b>${avg}分</b></div></div>
