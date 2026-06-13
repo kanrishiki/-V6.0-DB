@@ -97,6 +97,7 @@ function load(){try{return JSON.parse(localStorage.getItem(KEY))||initial()}catc
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function h(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function now(){return new Date().toTimeString().slice(0,5)}
+function today(){return new Date().toISOString().slice(0,10);}
 function fmt(m){return `${Math.floor(m/60)}時間 ${m%60}分`}
 function mins(s,e){if(!s||!e)return 0;const[sh,sm]=s.split(":").map(Number),[eh,em]=e.split(":").map(Number);return Math.max(0,eh*60+em-(sh*60+sm))}
 function isMaster(){
