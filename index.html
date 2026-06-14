@@ -580,6 +580,50 @@ async function deleteContent(v){
 
   await loadContentFromSupabase();
 }
+async function moveContent(name, direction){
+  if(!isAdmin()) return;
+
+  const list = state.contentMaster.map((name, index) => ({
+    name,
+    index
+  }));
+
+  const currentIndex = list.findIndex(x => x.name === name);
+  const targetIndex = currentIndex + direction;
+
+  if(currentIndex < 0) return;
+  if(targetIndex < 0 || targetIndex >= list.length) return;
+
+  const current = list[currentIndex];
+  const target = list[targetIndex];
+
+  const currentOrder = current.index + 1;
+  const targetOrder = target.index + 1;
+
+  const { error: error1 } = await supabaseClient
+    .from("content_master")
+    .update({ sort_order: targetOrder })
+    .eq("content_name", current.name)
+    .eq("facility_id", FACILITY_IDS[state.facilityId]);
+
+  if(error1){
+    alert("並び替えエラー：" + error1.message);
+    return;
+  }
+
+  const { error: error2 } = await supabaseClient
+    .from("content_master")
+    .update({ sort_order: currentOrder })
+    .eq("content_name", target.name)
+    .eq("facility_id", FACILITY_IDS[state.facilityId]);
+
+  if(error2){
+    alert("並び替えエラー：" + error2.message);
+    return;
+  }
+
+  await loadContentFromSupabase();
+}
 async function deleteUser(id){
   alert("削除ボタンは反応してるよ。id=" + id);
 
