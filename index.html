@@ -94,10 +94,14 @@ const JOBS=["看護師","准看護師","PT","OT","ST"];
 
 let state=load();
 
-function initial(){
-const today=new Date().toISOString().slice(0,10);
+function getToday(){
+  return new Date().toISOString().slice(0,10);
+}
 
-return{
+function initial(){
+  const today=getToday();
+
+  return{
 login:null,facilityId:"kamagaya",date:today,recordFilterDate:today,summaryDate:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
 userSearch:"",csvPanel:"",csvUserSearch:"",content:"バイタル測定",custom:"",active:null,tab:"日別",filterUser:"全員",
 vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
@@ -295,7 +299,7 @@ function logout(){state.login=null;state.active=null;state.editingId=null;save()
 function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
 
 function readInput(){
-state.date=document.getElementById("date")?.value||state.date;
+state.date=getToday();
 state.selectedUser=document.getElementById("selectedUser")?.value||"";
 state.selectedStaff=document.getElementById("staffName")?.value||"";
 const s=staff().find(x=>x.name===state.selectedStaff);
@@ -863,7 +867,7 @@ root.innerHTML=`
 <section class="card ${isAdmin()?"":"full"}">
 <h2>職員入力画面</h2>
 <div class="form4">
-<label>日付<input id="date" type="date" value="${h(today())}" disabled></label>
+<label>日付<input id="date" type="date" value="${h(getToday())}" disabled></label>
 <label>利用者検索<input placeholder="名前・居室で検索" value="${h(state.userSearch)}" oninput="state.userSearch=this.value;save();render()"></label>
 <label>利用者様<select id="selectedUser" onchange="state.selectedUser=this.value;save();render()"><option value="">選択してください</option>${filteredUsers.map(u=>`<option value="${h(u.name)}" ${state.selectedUser===u.name?"selected":""}>${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
 <label>職員名<select id="staffName" onchange="onStaffChange()">${ss.map(s=>`<option value="${h(s.name)}" ${state.selectedStaff===s.name?"selected":""}>${h(s.name)}（${h(s.job)}）</option>`).join("")}</select></label>
