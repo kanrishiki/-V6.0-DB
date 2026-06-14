@@ -219,7 +219,6 @@ async function loadPatientsFromSupabase(){
     return;
   }
    alert("利用者読込テスト成功：" + data.length + "件");
-}
   state.users = data.map(p => ({
     id: p.id,
     facilityId: state.facilityId,
@@ -230,7 +229,7 @@ async function loadPatientsFromSupabase(){
 
   save();
   render();
-
+}
 function renderLogin(){
 root.innerHTML=`
 <div class="login"><div class="login-card">
