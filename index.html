@@ -103,7 +103,7 @@ function initial(){
 
   return{
 login:null,facilityId:"kamagaya",date:today,recordFilterDate:today,summaryDate:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
-userSearch:"",csvPanel:"",csvUserSearch:"",content:"バイタル測定",custom:"",active:null,tab:"日別",filterUser:"全員",
+userSearch:"",csvPanel:"",csvUserSearch:"",content:"",custom:"",active:null,tab:"日別",filterUser:"全員",
 vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
 contentMaster:["バイタル測定","服薬確認・管理","処置","創部観察","点滴管理","吸引","経管栄養","排泄ケア","リハビリ・機能訓練","状態観察","家族・医師への連絡","看護記録作成","その他"],
 users:[
@@ -304,7 +304,9 @@ state.selectedUser=document.getElementById("selectedUser")?.value||"";
 state.selectedStaff=document.getElementById("staffName")?.value||"";
 const s=staff().find(x=>x.name===state.selectedStaff);
 state.selectedJob=s?.job||"看護師";
-state.content=document.getElementById("content")?.value||state.content;
+state.content = [...document.querySelectorAll(".content-checks input:checked")]
+  .map(x => x.value)
+  .join("、");
 state.custom=document.getElementById("custom")?.value||"";
 state.vitals={
 temperature:document.getElementById("temperature")?.value||"",
