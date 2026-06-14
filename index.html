@@ -67,6 +67,10 @@
 .mini-btn.danger{
   min-width:52px;
 }
+.records-scroll{
+  max-height:700px;
+  overflow-y:auto;
+}
 </style>
 </head>
 <body>
@@ -1025,7 +1029,8 @@ ${us.map(u=>`
       onchange="state.recordFilterDate=this.value;save();render()"
     >
   </label>
-</div><div class="table-wrap"><table><thead><tr><th>日付</th><th>訪問</th><th>利用者</th><th>職員名</th><th>職種</th><th>内容</th><th>時間</th><th>バイタル</th><th>記録</th><th>操作</th></tr></thead><tbody>${rs.map(recordRow).join("")}</tbody></table></div></section>
+</div>
+<div class="records-scroll"><div class="table-wrap"><table><thead><tr><th>日付</th><th>訪問</th><th>利用者</th><th>職員名</th><th>職種</th><th>内容</th><th>時間</th><th>バイタル</th><th>記録</th><th>操作</th></tr></thead><tbody>${rs.map(recordRow).join("")}</tbody></table></div></section>
 
 ${isAdmin()?`
 <section class="card full"><h2>実績確認</h2><div class="summary"><div><small>本日の訪問数</small><b>${daily.length}回</b></div><div><small>合計時間</small><b>${fmt(total)}</b></div><div><small>対応利用者数</small><b>${unique}名</b></div><div><small>平均対応時間</small><b>${avg}分</b></div></div>
