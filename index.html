@@ -825,7 +825,10 @@ return `<div class="csv-panel"><h3>${title}</h3>${body}<div class="actions">${ac
 
 function render(){
 if(!state.login){renderLogin();return}
-const us=users(),ss=staff(),rs=displayRecords();
+const us=users(),ss=staff(),rs=displayRecords().sort((a,b)=>{
+  if(a.date!==b.date) return b.date.localeCompare(a.date);
+  return (b.endTime||b.startTime||"").localeCompare(a.endTime||a.startTime||"");
+});
 const filteredUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.userSearch));
 const filteredCsvUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.csvUserSearch||""));
 const daily=rs.filter(r=>r.date===state.date),total=daily.reduce((s,r)=>s+r.minutes,0),unique=new Set(daily.map(r=>r.user)).size,avg=daily.length?Math.round(total/daily.length):0;
