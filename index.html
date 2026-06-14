@@ -1011,9 +1011,9 @@ ${us.map(u=>`
 <section class="card"><h2>内容マスタ管理</h2><div class="master"><input id="newContent" placeholder="内容項目を追加"><span></span><button onclick="addContent()">追加</button></div><div class="master-list">${state.contentMaster.map(c=>`<div class="row">
   <div><b>${h(c)}</b></div>
   <div class="row-actions">
-    <button class="mini-btn" onclick="moveContent('${c}',-1)">↑</button>
-    <button class="mini-btn" onclick="moveContent('${c}',1)">↓</button>
-    <button class="mini-btn danger" onclick="deleteContent('${c}')">削除</button>
+   <button class="mini-btn" onclick="moveContent('${c}',-1)">⬆️</button>
+<button class="mini-btn" onclick="moveContent('${c}',1)">⬇️</button>
+<button class="mini-btn danger" onclick="deleteContent('${c}')">🗑️</button>
   </div>
 </div>`).join("")}</section>`:""}</div>
 
