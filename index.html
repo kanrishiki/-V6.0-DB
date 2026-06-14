@@ -987,8 +987,9 @@ ${us.map(u=>`
 
 <section class="card"><h2>職員マスタ管理</h2><div class="master"><input id="newStaffName" placeholder="職員名"><select id="newStaffJob">${JOBS.map(j=>`<option value="${h(j)}">${h(j)}</option>`).join("")}</select><button onclick="addStaff()">追加</button></div><div class="master-list">${ss.map(s=>`<div class="row"><div><b>${h(s.name)}</b><p>職種：${h(s.job)}</p></div><button class="icon danger" onclick="deleteStaff('${s.id}')">削除</button></div>`).join("")}</div></section>
 
-<section class="card"><h2>内容マスタ管理</h2><div class="master"><input id="newContent" placeholder="内容項目を追加"><span></span><button onclick="addContent()">追加</button></div><div class="master-list">${state.contentMaster.map(c=>`<div class="row"><div><b>${h(c)}</b></div><button class="icon danger" onclick="deleteContent('${h(c)}')">削除</button></div>`).join("")}</section>
-`:""}</div>
+<section class="card"><h2>内容マスタ管理</h2><div class="master"><input id="newContent" placeholder="内容項目を追加"><span></span><button onclick="addContent()">追加</button></div><div class="master-list">${state.contentMaster.map(c=>`<div class="row"><div><b>${h(c)}</b></div>
+<button class="icon" onclick="moveContent('${c}',-1)">↑</button>
+<button class="icon" onclick="moveContent('${c}',1)">↓</button><button class="icon danger" onclick="deleteContent('${h(c)}')">削除</button></div>`).join("")}</section>`:""}</div>
 
 <section class="card full"><h2>${isAdmin()?"記録一覧・修正・削除":"記録一覧・修正"}</h2><div class="form4" style="margin-bottom:10px;">
   <label>表示日付
