@@ -518,11 +518,11 @@ async function loadStaffFromSupabase(){
   render();
 }
 async function loadContentFromSupabase(){
-  const { data, error } = await supabaseClient
-    .from("content_master")
-    .select("*")
-    .eq("facility_id", FACILITY_IDS[state.facilityId])
-    .order("content_name");
+ const { data, error } = await supabaseClient
+.from("content_master")
+.select("*")
+.eq("facility_id", FACILITY_IDS[state.facilityId])
+.order("sort_order", { ascending:true });
 
   if(error){
     alert("内容読込エラー: " + error.message);
