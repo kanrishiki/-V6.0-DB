@@ -218,6 +218,8 @@ async function loadPatientsFromSupabase(){
     alert("利用者読込エラー: " + error.message);
     return;
   }
+   alert("利用者読込テスト成功：" + data.length + "件");
+}
   state.users = data.map(p => ({
     id: p.id,
     facilityId: state.facilityId,
@@ -252,7 +254,7 @@ root.innerHTML=`
 <p class="muted">
 拠点ごとに設定された職員・管理者パスワードを入力してください
 </p>
-<button class="outline" onclick="loadPatientsFromSupabase()">利用者読込テスト</button>
+<button class="outline" onclick="testLoadPatients()">利用者読込テスト</button>
 <button class="outline" onclick="testSupabaseConnection()">Supabase接続テスト</button>
 <p class="muted">職員：入力・修正のみ / 管理者：削除・マスタ・CSV可/ マスター：全拠点全権限</p>
 </div></div>`;
