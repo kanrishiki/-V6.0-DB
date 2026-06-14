@@ -218,7 +218,11 @@ async function loadPatientsFromSupabase(){
     alert("利用者読込エラー: " + error.message);
     return;
   }
-   alert("利用者読込テスト成功：" + data.length + "件");
+  async function testLoadPatients(){
+  await loadPatientsFromSupabase();
+
+  alert("利用者読込テスト完了：" + users().length + "件");
+}
   state.users = data.map(p => ({
     id: p.id,
     facilityId: state.facilityId,
