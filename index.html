@@ -427,7 +427,14 @@ const supabaseId = await saveRecordToSupabase(record);
 if(supabaseId){
   record.id = supabaseId;
 }
-state.active=null;state.vitals={
+state.active=null;
+
+state.selectedUser="";
+state.selectedStaff="";
+state.selectedJob="看護師";
+state.content="";
+state.custom="";
+state.vitals={
   temperature:"",
   systolic:"",
   diastolic:"",
@@ -435,12 +442,13 @@ state.active=null;state.vitals={
   spo2:"",
   memo:""
 };
-save();render();
+
+save();
+render();
 }
 async function addUser(){
   if(!isAdmin()) return;
-
-  const name = document.getElementById("newUserName").value.trim();
+　const name = document.getElementById("newUserName").value.trim();
   const room = document.getElementById("newUserRoom").value.trim();
 
   if(!name) return;
