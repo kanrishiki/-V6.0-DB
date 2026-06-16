@@ -811,7 +811,7 @@ function exportUserCSV(){
   const u=document.getElementById("csvUserSelect")?.value||"全員";
 
   if(u==="全員"){
-    alert("印刷用は利用者を1名選んでね");
+    alert("印刷用は利用者を1名選んでください");
     return;
   }
 
@@ -923,6 +923,7 @@ const us=users(),ss=staff(),rs=displayRecords().sort((a,b)=>{
   if(a.date!==b.date) return b.date.localeCompare(a.date);
   return (b.endTime||b.startTime||"").localeCompare(a.endTime||a.startTime||"");
 });
+const achievementRecords = records();
 const filteredUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.userSearch));
 const filteredCsvUsers=us.filter(u=>`${u.room} ${u.name}`.includes(state.csvUserSearch||""));
 const daily=rs.filter(r=>r.date===state.date),total=daily.reduce((s,r)=>s+r.minutes,0),unique=new Set(daily.map(r=>r.user)).size,avg=daily.length?Math.round(total/daily.length):0;
@@ -930,8 +931,13 @@ const dailyTotals=group(daily,r=>r.user),monthRs=rs.filter(r=>r.date.startsWith(
 const summaryDate = state.summaryDate || today;
 const summaryRecords = records().filter(r => r.date === summaryDate);
 const summaryTotals = group(summaryRecords,r => r.user);
-const target=state.filterUser==="全員"?rs:rs.filter(r=>r.user===state.filterUser);
-const achDaily=group(target,r=>r.date),achWeekly=group(target,r=>{const w=weekRange(r.date);return `${w.start}〜${w.end}`}),achMonthly=group(target,r=>r.date.slice(0,7)),achUser=group(rs,r=>r.user);
+const target=state.filterUser==="全員"
+  ? achievementRecords
+  : achievementRecords.filter(r=>r.user===state.filterUser);
+const achDaily=group(target,r=>r.date),
+  achWeekly=group(target,r=>{const w=weekRange(r.date);return `${w.start}〜${w.end}`}),
+  achMonthly=group(target,r=>r.date.slice(0,7)),
+  achUser=group(rs,r=>r.user);
 const current=state.tab==="日別"?achDaily:state.tab==="週別"?achWeekly:state.tab==="月間"?achMonthly:achUser;
 
 root.innerHTML=`
@@ -1013,7 +1019,7 @@ ${Object.entries(summaryTotals).length
 ? Object.entries(summaryTotals).map(([u,s])=>
 `<div class="mini"><b>${h(u)}</b>
 <span>${s.visits}回 / ${fmt(s.minutes)}</span></div>`
-).join(""): `<p class="muted">この日の記録はないよ。</p>`}
+).join(""): `<p class="muted">該当日 記録なし</p>`}
 </div>
 </section>
 
