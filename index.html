@@ -96,6 +96,9 @@ const FACILITY_IDS = {
   kawaguchi: "8d82c017-10e2-4ea8-a0d5-4cffda56f327",
   shiki: "e548e835-50c8-472f-b942-7125b213921d"
 };
+function facilityKeyFromUuid(uuid){
+  return Object.keys(FACILITY_IDS).find(k => FACILITY_IDS[k] === uuid) || state.facilityId;
+}
 const PASSWORDS = {
   kamagaya: {
     staff: "ST.kamagaya",
@@ -209,25 +212,26 @@ alert("Supabase接続エラー: " + error.message);
 alert("Supabase接続成功！");
 }
 async function loadPatientsFromSupabase(){
-  const { data, error } = await supabaseClient
-  .from("patients")
-.select("*")
-.eq("facility_id", FACILITY_IDS[state.facilityId])
-.order("room",{ ascending:true });
-  if(error){
-    alert("利用者読込エラー: " + error.message);
-    return;
-  }
-  state.users = data.map(p => ({
+
+  let query = supabaseClient
+    .from("patients")
+    .select("*")
+    .order("room", { ascending:true });
+if(!isMaster()){
+query = query.eq("facility_id", FACILITY_IDS[state.facilityId]);}
+const { data, error } = await query;
+if(error){
+    alert("利用者読込エラー：" + error.message);
+    return;}
+state.users = data.map(p => ({
     id: p.id,
-    facilityId: state.facilityId,
+    facilityId: facilityKeyFromUuid(p.facility_id),
     name: p.name,
     room: p.room || "",
     status: "利用中"
   }));
-
-  save();
-  render();
+save();
+render();
 }
    async function testLoadPatients(){
   await loadPatientsFromSupabase();
@@ -404,20 +408,21 @@ async function saveRecordToSupabase(record){
 return data.id;
 }
 async function loadRecordsFromSupabase(){
-  const { data, error } = await supabaseClient
+let query = supabaseClient
     .from("nursing_records")
     .select("*")
-    .eq("facility_id", FACILITY_IDS[state.facilityId])
     .order("created_at", { ascending:false });
-
-  if(error){
-    alert("記録読込エラー: " + error.message);
+if(!isMaster()){
+    query = query.eq("facility_id", FACILITY_IDS[state.facilityId]);
+  }
+const { data, error } = await query;
+if(error){
+    alert("記録読込エラー：" + error.message);
     return;
   }
-
   state.records = data.map(r => ({
     id: r.id,
-    facilityId: state.facilityId,
+    facilityId: facilityKeyFromUuid(r.facility_id),
     date: r.visit_date,
     user: r.patient_name,
     staff: r.staff_name,
@@ -532,48 +537,51 @@ async function addStaff(){
   await loadStaffFromSupabase();
 }
 async function loadStaffFromSupabase(){
-  const { data, error } = await supabaseClient
+let query = supabaseClient
     .from("staff_members")
     .select("*")
-    .eq("facility_id", FACILITY_IDS[state.facilityId])
     .order("name");
-
-  if(error){
-    alert("職員読込エラー: " + error.message);
+if(!isMaster()){
+    query = query.eq("facility_id", FACILITY_IDS[state.facilityId]);
+  }
+const { data, error } = await query;
+if(error){
+    alert("職員読込エラー：" + error.message);
     return;
   }
-
-  state.staff = data.map(s => ({
+ state.staff = data.map(s => ({
     id: s.id,
-    facilityId: state.facilityId,
+    facilityId: facilityKeyFromUuid(s.facility_id),
     name: s.name,
     job: s.job
   }));
-
-  save();
-  render();
+save();
+render();
 }
 async function loadContentFromSupabase(){
- const { data, error } = await supabaseClient
-.from("content_master")
-.select("*")
-.eq("facility_id", FACILITY_IDS[state.facilityId])
-.order("sort_order", { ascending:true });
+let targetFacility = state.facilityId;
 
-  if(error){
-    alert("内容読込エラー: " + error.message);
+if(isMaster() && state.masterFacility && state.masterFacility !== "all"){
+    targetFacility = state.masterFacility;
+  }
+let query = supabaseClient
+    .from("content_master")
+    .select("*")
+    .eq("facility_id", FACILITY_IDS[targetFacility])
+    .order("sort_order", { ascending:true });
+const { data, error } = await query;
+if(error){
+    alert("内容読込エラー：" + error.message);
     return;
   }
-
-  state.contentMaster = data.map(c => c.content_name);
+state.contentMaster = data.map(c => c.content_name);
 
   save();
   render();
 }
 async function addContent(){
   if(!isAdmin()) return;
-
-  const v = document.getElementById("newContent").value.trim();
+const v = document.getElementById("newContent").value.trim();
   if(!v) return;
 
   const { error } = await supabaseClient
@@ -932,12 +940,12 @@ root.innerHTML=`
 <div class="app">
 <div class="header">
   <div>
-    <h1>看護記録・時間積算アプリ Ver6.5-MRT</h1>
+    <h1>看護記録・時間積算アプリ Ver6.6-Beta</h1>
     <p>${h(facility().name)} <span class="badge">${isAdmin()?"管理者画面":"職員画面"}</span></p>
     ${isMaster()?`
   <label style="max-width:320px;margin-top:10px;">
     表示拠点
-    <select onchange="state.masterFacility=this.value;save();render()">
+   <select onchange="state.masterFacility=this.value;save();refreshData()">
       <option value="all" ${(state.masterFacility||"all")==="all"?"selected":""}>全拠点</option>
       ${FACILITIES.map(f=>`
         <option value="${h(f.id)}" ${state.masterFacility===f.id?"selected":""}>
