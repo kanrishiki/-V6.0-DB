@@ -336,8 +336,6 @@ async function refreshData(){
   alert("同期完了");
 }
 function logout(){state.login=null;state.active=null;state.editingId=null;save();render()}
-function resetAll(){if(confirm("このブラウザ内の全データを初期化する？")){localStorage.removeItem(KEY);state=initial();render()}}
-
 function readInput(){
 state.date=getToday();
 state.selectedUser=document.getElementById("selectedUser")?.value||"";
@@ -1057,7 +1055,6 @@ ${csvPanelHtml(filteredCsvUsers)}
 <label>利用者絞り込み<select id="filterUser" onchange="state.filterUser=this.value;save();render()"><option value="全員">全員</option>${us.map(u=>`<option value="${h(u.name)}" ${state.filterUser===u.name?"selected":""}>${h(u.name)}</option>`).join("")}</select></label>
 <div class="tabs">${["日別","週別","月間","利用者別"].map(t=>`<button class="${state.tab===t?"active":""}" onclick="state.tab='${t}';save();render()">${t}</button>`).join("")}</div>
 <div class="table-wrap"><table><thead><tr><th>${state.tab==="日別"?"日付":state.tab==="週別"?"週":state.tab==="月間"?"月":"利用者様"}</th><th>訪問回数</th><th>累積介入時間</th></tr></thead><tbody>${Object.entries(current).map(([k,s])=>`<tr><td>${h(k)}</td><td>${s.visits}回</td><td>${fmt(s.minutes)}</td></tr>`).join("")}</tbody></table></div></section>
-<div class="full" style="text-align:right"><button class="outline" onclick="resetAll()">全データ初期化</button></div>
 `:""}
 </div></div>`;
 }
