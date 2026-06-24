@@ -844,19 +844,24 @@ function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.val
 function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
 function exportUserCSV(){
   const u=document.getElementById("csvUserSelect")?.value||"全員";
-
+　const from=document.getElementById("csvUserFrom")?.value||"";
+　const to=document.getElementById("csvUserTo")?.value||"";
   if(u==="全員"){
     alert("印刷用は利用者を1名選んでください");
     return;
   }
 
-  const list=records()
-    .filter(r=>r.user===u)
-    .sort((a,b)=>{
-      if(a.date!==b.date) return a.date.localeCompare(b.date);
-      return (a.startTime||"").localeCompare(b.startTime||"");
-    });
-
+ const list=records()
+  .filter(r=>r.user===u)
+  .filter(r=>{
+    if(from && r.date < from) return false;
+    if(to && r.date > to) return false;
+    return true;
+  })
+  .sort((a,b)=>{
+    if(a.date!==b.date) return a.date.localeCompare(b.date);
+    return (a.startTime||"").localeCompare(b.startTime||"");
+  });
   const header=[
     "日付",
     "訪問回数",
@@ -951,6 +956,8 @@ if(state.csvPanel==="user"){
 body=`<div class="csv-user-row">
 <label>利用者検索<input id="csvUserSearch" placeholder="名前・居室で検索" value="${h(state.csvUserSearch||"")}" oninput="state.csvUserSearch=this.value;save();render()"></label>
 <label>出力対象<select id="csvUserSelect"><option value="全員">全員</option>${filteredCsvUsers.map(u=>`<option value="${h(u.name)}">${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
+<label>開始日<input id="csvUserFrom" type="date" value="${h(state.date)}"></label>
+<label>終了日<input id="csvUserTo" type="date" value="${h(state.date)}"></label>
 </div>`;
 action=`<button onclick="exportUserCSV()">この条件でCSV出力</button>`;
 }
