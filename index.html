@@ -229,7 +229,8 @@ state.users = data.map(p => ({
     name: p.name,
     room: p.room || "",
     status: "利用中"
-  }));
+  }))
+  .sort((a,b)=>a.name.localeCompare(b.name,"ja"));
 save();
 render();
 }
