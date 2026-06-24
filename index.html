@@ -882,7 +882,12 @@ function exportUserCSV(){
   ]);
 
   const totalMinutes=list.reduce((sum,r)=>sum+Number(r.minutes||0),0);
-
+　const signRows=[
+  [],
+  ["管理者確認欄"],
+  ["管理者サイン","____________________"],
+  ["確認日","____________________"]
+];
   const summary=[
     [],
     ["利用者名",u],
@@ -890,7 +895,7 @@ function exportUserCSV(){
     ["累積時間",totalMinutes+"分"]
   ];
 
-  const text=[...summary,[],header,...rows]
+  const text=[...summary,[],header,...rows,...signRows]
     .map(row=>row.map(c=>`"${String(c??"").replaceAll('"','""')}"`).join(","))
     .join("\n");
 
