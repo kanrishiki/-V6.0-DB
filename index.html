@@ -804,7 +804,42 @@ function weeklyCSV(){state.csvPanel="weekly";save();render()}
 function monthlyCSV(){state.csvPanel="monthly";save();render()}
 function userCSV(){state.csvPanel="user";save();render()}
 function closeCsvPanel(){state.csvPanel="";save();render()}
-function exportDailyCSV(){const d=document.getElementById("csvDailyDate")?.value||state.date;csv(records().filter(r=>r.date===d),`日別CSV_${facility().short}_${d}.csv`)}
+function exportDailyCSV(){
+  const d=document.getElementById("csvDailyDate")?.value||state.date;
+
+  const list=records().filter(r=>r.date===d);
+
+  csv(
+    [
+      ...list,
+      {
+        date:"",
+        visitNo:"",
+        user:"管理者確認欄",
+        staff:"",
+        job:"",
+        content:"",
+        startTime:"",
+        endTime:"",
+        minutes:"",
+        vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
+      },
+      {
+        date:"",
+        visitNo:"",
+        user:"管理者サイン：____________________",
+        staff:"",
+        job:"",
+        content:"",
+        startTime:"",
+        endTime:"",
+        minutes:"",
+        vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
+      }
+    ],
+    `日別CSV_${facility().short}_${d}.csv`
+  );
+}
 function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.value||state.date,w=weekRange(d);csv(records().filter(r=>r.date>=w.start&&r.date<=w.end),`週別CSV_${facility().short}_${w.start}_${w.end}.csv`)}
 function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
 function exportUserCSV(){
