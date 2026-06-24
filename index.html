@@ -182,8 +182,11 @@ function facility(){
 
 function users(){
   const filter=currentFacilityFilter();
-  if(filter==="all") return state.users;
-  return state.users.filter(u=>u.facilityId===filter);}
+　const list = filter==="all"
+    ? state.users
+    : state.users.filter(u=>u.facilityId===filter);
+return list.sort((a,b)=>a.name.localeCompare(b.name,"ja"));
+}
 
 function staff(){
   const filter=currentFacilityFilter();
