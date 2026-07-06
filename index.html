@@ -225,7 +225,7 @@ async function loadPatientsFromSupabase(){
   let query = supabaseClient
     .from("patients")
     .select("*")
-    .order("name", { ascending:true });
+    .order("room", { ascending:true });
 if(!isMaster()){
 query = query.eq("facility_id", FACILITY_IDS[state.facilityId]);}
 const { data, error } = await query;
