@@ -136,7 +136,7 @@ function initial(){
   const today=getToday();
 
   return{
-login:null,facilityId:"kamagaya",date:today,recordFilterDate:today,summaryDate:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",
+login:null,facilityId:"kamagaya",date:today,recordFilterDate:today,summaryDate:today,selectedUser:"",selectedStaff:"",selectedJob:"看護師",recentStaffs:[],
 userSearch:"",csvPanel:"",csvUserSearch:"",content:"",custom:"",active:null,tab:"日別",filterUser:"全員",
 vitals:{temperature:"",systolic:"",diastolic:"",pulse:"",spo2:"",memo:""},
 contentMaster:["バイタル測定","服薬確認・管理","処置","創部観察","点滴管理","吸引","経管栄養","排泄ケア","リハビリ・機能訓練","状態観察","家族・医師への連絡","看護記録作成","その他"],
@@ -377,8 +377,16 @@ memo:document.getElementById("memo")?.value||""
   render();
 }
 function onStaffChange(){
-const name=document.getElementById("staffName").value,s=staff().find(x=>x.name===name);
-state.selectedStaff=name;state.selectedJob=s?.job||"看護師";save();render();
+  const name=document.getElementById("staffName").value;
+  const s=staff().find(x=>x.name===name);
+　state.selectedStaff=name;
+  state.selectedJob=s?.job||"看護師";
+　state.recentStaffs=[
+    name,
+    ...(state.recentStaffs||[]).filter(x=>x!==name)
+  ].slice(0,8);
+　save();
+　render();
 }
 function startVisit(){
 readInput();
@@ -979,7 +987,17 @@ return `<div class="csv-panel"><h3>${title}</h3>${body}<div class="actions">${ac
 
 function render(){
 if(!state.login){renderLogin();return}
-const us=users(),ss=staff(),rs=displayRecords().sort((a,b)=>{
+const us=users();
+const ss=[
+  ...(state.recentStaffs||[])
+    .map(name=>staff().find(s=>s.name===name))
+    .filter(Boolean),
+
+  ...staff().filter(s=>
+    !(state.recentStaffs||[]).includes(s.name)
+  )
+];
+const rs=displayRecords().sort((a,b)=>{
   if(a.date!==b.date) return b.date.localeCompare(a.date);
   return (b.endTime||b.startTime||"").localeCompare(a.endTime||a.startTime||"");
 });
@@ -1036,7 +1054,20 @@ root.innerHTML=`
 <label>日付<input id="date" type="date" value="${h(getToday())}" disabled></label>
 <label>利用者検索<input placeholder="名前・居室で検索" value="${h(state.userSearch)}" oninput="state.userSearch=this.value;save();render()"></label>
 <label>利用者様<select id="selectedUser" onchange="state.selectedUser=this.value;save();render()"><option value="">選択してください</option>${filteredUsers.map(u=>`<option value="${h(u.name)}" ${state.selectedUser===u.name?"selected":""}>${h(u.room)}号 ${h(u.name)}</option>`).join("")}</select></label>
-<label>職員名<select id="staffName" onchange="onStaffChange()">${ss.map(s=>`<option value="${h(s.name)}" ${state.selectedStaff===s.name?"selected":""}>${h(s.name)}（${h(s.job)}）</option>`).join("")}</select></label>
+
+<label>職員名<select id="staffName" onchange="onStaffChange()">${[
+  ...(state.recentStaffs||[])
+    .map(name=>ss.find(s=>s.name===name))
+    .filter(Boolean),
+　...ss.filter(s=>
+    !(state.recentStaffs||[]).includes(s.name)
+  )
+].map(s=>
+  `<option value="${h(s.name)}"
+   ${state.selectedStaff===s.name?"selected":""}>
+   ${h(s.name)} (${h(s.job)})
+   </option>`
+).join("")}</select></label>
 </div>
 
 <div class="form2"><button onclick="startVisit()" ${state.active?"disabled":""}>入室</button><button class="outline" onclick="endVisit()" ${!state.active?"disabled":""}>退室</button></div>
