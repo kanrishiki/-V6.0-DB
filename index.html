@@ -188,12 +188,16 @@ function facility(){
 
 function users(){
   const filter=currentFacilityFilter();
-　const list = filter==="all"
+  const list = filter==="all"
     ? state.users
     : state.users.filter(u=>u.facilityId===filter);
-return list.sort((a,b)=>
-  String(a.room||"").localeCompare(String(b.room||""),"ja",{numeric:true})
-);
+  return [...list].sort((a,b)=>
+    String(a.room||"").localeCompare(
+      String(b.room||""),
+      "ja",
+      {numeric:true}
+    )
+  );
 }
 
 function staff(){
