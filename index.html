@@ -191,7 +191,9 @@ function users(){
 　const list = filter==="all"
     ? state.users
     : state.users.filter(u=>u.facilityId===filter);
-return list.sort((a,b)=>a.name.localeCompare(b.name,"ja"));
+return list.sort((a,b)=>
+  String(a.room||"").localeCompare(String(b.room||""),"ja",{numeric:true})
+);
 }
 
 function staff(){
