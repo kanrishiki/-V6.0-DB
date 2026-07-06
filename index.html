@@ -791,19 +791,21 @@ async function deleteRecord(id){
 function csv(list,name){
   if(!isAdmin()) return;
 
-  const header = [
-    "日付",
-    "訪問回数",
-    "名前",
-    "開始",
-    "終了",
-    "合計分数"
-  ];
+const header = [
+  "日付",
+  "訪問回数",
+  "名前",
+  "職種",
+  "開始",
+  "終了",
+  "合計分数"
+];
 
   const rows = list.map(r => [
     r.date,
     r.visitNo + "回目",
     r.user,
+    r.job,
     r.startTime,
     r.endTime,
     r.minutes
