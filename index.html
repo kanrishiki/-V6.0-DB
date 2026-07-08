@@ -335,6 +335,13 @@ root.innerHTML=`
   onkeydown="if(event.key==='Enter'){login()}"
 >
 </label>
+<label style="display:flex;align-items:center;gap:6px;margin-top:6px;">
+  <input
+    type="checkbox"
+    onchange="togglePassword(this.checked)"
+  >
+  パスワードを表示
+</label>
 <button onclick="login()">ログイン</button>
 <p class="muted">
 拠点ごとに設定された職員・管理者パスワードを入力してください
@@ -793,6 +800,10 @@ async function deleteUser(id){
     return;}
 　　alert("利用者更新成功");
 await loadPatientsFromSupabase();
+}
+  function togglePassword(show){
+  const input = document.getElementById("loginPassword");
+  input.type = show ? "text" : "password";
 }
 async function deleteStaff(id){
   if(!isAdmin()) return;
