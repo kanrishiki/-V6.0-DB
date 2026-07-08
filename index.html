@@ -335,13 +335,14 @@ root.innerHTML=`
   onkeydown="if(event.key==='Enter'){login()}"
 >
 </label>
-<label style="display:flex;align-items:center;gap:6px;margin-top:6px;">
-  <input
-    type="checkbox"
-    onchange="togglePassword(this.checked)"
-  >
-  パスワードを表示
-</label>
+<button
+  type="button"
+  class="outline"
+  onclick="togglePassword()"
+  id="togglePasswordBtn"
+>
+  パスワード表示
+</button>
 <button onclick="login()">ログイン</button>
 <p class="muted">
 拠点ごとに設定された職員・管理者パスワードを入力してください
@@ -801,9 +802,21 @@ async function deleteUser(id){
 　　alert("利用者更新成功");
 await loadPatientsFromSupabase();
 }
-  function togglePassword(show){
-  const input = document.getElementById("loginPassword");
-  input.type = show ? "text" : "password";
+function togglePassword(){
+
+  const input =
+    document.getElementById("loginPassword");
+
+  const btn =
+    document.getElementById("togglePasswordBtn");
+
+  if(input.type === "password"){
+    input.type = "text";
+    btn.textContent = "パスワード非表示";
+  }else{
+    input.type = "password";
+    btn.textContent = "パスワード表示";
+  }
 }
 async function deleteStaff(id){
   if(!isAdmin()) return;
