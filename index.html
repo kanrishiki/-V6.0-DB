@@ -765,7 +765,7 @@ async function deleteUser(id){
     alert("利用者削除エラー: " + error.message);
     return;}
 　alert("利用者削除成功");
-  
+   await loadPatientsFromSupabase();}
   async function editUser(id){
 　if(!isAdmin()){
     alert("管理者ではないため編集できません");
@@ -793,10 +793,8 @@ async function deleteUser(id){
     alert("利用者更新エラー：" + error.message);
     return;}
 　　alert("利用者更新成功");
-
-  await loadPatientsFromSupabase();}
-
-  await loadPatientsFromSupabase();}
+await loadPatientsFromSupabase();
+}
 async function deleteStaff(id){
   if(!isAdmin()) return;
 
