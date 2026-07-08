@@ -770,8 +770,7 @@ async function deleteUser(id){
 　if(!isAdmin()){
     alert("管理者ではないため編集できません");
     return;}
-　const patient = us.find(u => u.id === id);
-
+　const patient = state.users.find(u => String(u.id) === String(id));
   if(!patient){
     alert("利用者が見つかりません");
     return;}
