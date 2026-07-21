@@ -140,6 +140,12 @@ Ver6.6 Release Candidate 1 (RC1)
   max-height:700px;
   overflow-y:auto;
 }
+  #memo{
+  height: 80px;
+  min-height: 80px;
+  transition: height .2s ease;
+  resize: vertical;
+}
 </style>
 </head>
 <body>
@@ -843,6 +849,16 @@ function togglePassword(){
     btn.textContent = "パスワード表示";
   }
 }
+ function expandMemo(el){
+    el.style.height = "auto";
+    el.style.height = Math.max(el.scrollHeight, 240) + "px";
+}
+
+function shrinkMemo(el){
+    if(el.value.trim() === ""){
+        el.style.height = "80px";
+    }
+}
 async function deleteStaff(id){
   if(!isAdmin()) return;
 
@@ -1238,7 +1254,13 @@ ${state.active?`<div class="active-box">入室中：${h(state.active.user)} / ${
 <input id="pulse" placeholder="脈拍" value="${h(state.vitals.pulse)}">
 <input id="spo2" type="number" step="1" min="0" max="100" placeholder="95" value="${h(state.vitals.spo2||"")}" onfocus="if(this.value==='')this.value='95'">
 </div>
-<textarea id="memo" placeholder="記録欄・申し送り・特記事項">${h(state.vitals.memo)}</textarea>
+<textarea
+    id="memo"
+    placeholder="記録欄・申し送り・特記事項"
+    onfocus="expandMemo(this)"
+    oninput="expandMemo(this)"
+    onblur="shrinkMemo(this)"
+>${h(state.vitals.memo)}</textarea>
 </section>
 
 ${isAdmin()?`
