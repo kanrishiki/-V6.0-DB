@@ -558,9 +558,26 @@ state.records
   render();
 }
 async function endVisit(){
-readInput();if(!state.active)return;
-const endTime=now(),visitNo=records().filter(r=>r.date===state.active.date&&r.user===state.active.user).length+1;
-state.records.push({id:Date.now(),...state.active,visitNo,endTime,minutes:mins(state.active.startTime,endTime),vitals:{...state.vitals}});
+  readInput();
+  if(!state.active) return;
+const endTime = now();
+const visitNo =
+    records()
+      .filter(r =>
+        r.date === state.active.date &&
+        r.user === state.active.user
+      )
+      .length + 1;
+state.records.push({
+    id: Date.now(),
+    ...state.active,
+    visitNo,
+    date: state.active.date,
+    endTime,
+    minutes: mins(state.active.startTime, endTime),
+    vitals: { ...state.vitals }
+  });
+
 const record = state.records[state.records.length - 1];
 
 const supabaseId = await saveRecordToSupabase(record);
