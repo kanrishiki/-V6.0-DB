@@ -983,6 +983,7 @@ const header = [
 function dailyCSV(){state.csvPanel="daily";save();render()}
 function weeklyCSV(){state.csvPanel="weekly";save();render()}
 function monthlyCSV(){state.csvPanel="monthly";save();render()}
+function rangeCSV(){state.csvPanel="range";save();render();}
 function userCSV(){state.csvPanel="user";save();render()}
 function closeCsvPanel(){state.csvPanel="";save();render()}
 function exportDailyCSV(){
@@ -1023,7 +1024,39 @@ function exportDailyCSV(){
 }
 function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.value||state.date,w=weekRange(d);csv(records().filter(r=>r.date>=w.start&&r.date<=w.end),`週別CSV_${facility().short}_${w.start}_${w.end}.csv`)}
 function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
-function exportUserCSV(){
+function exportRangeCSV(){
+  const from = document.getElementById("csvRangeFrom")?.value || "";
+  const to = document.getElementById("csvRangeTo")?.value || "";
+if(!from || !to){
+    alert("開始日と終了日を選択してください");
+    return;
+  }
+if(from > to){
+    alert("開始日が終了日より後になっています");
+    return;
+  }
+const list = records()
+    .filter(r => {
+      if(r.date < from) return false;
+      if(r.date > to) return false;
+      return true;
+    })
+    .sort((a,b)=>{
+      if(a.date !== b.date){
+        return a.date.localeCompare(b.date);
+      }
+      return (a.startTime || "").localeCompare(b.startTime || "");
+    });
+if(list.length === 0){
+    alert("指定期間の記録がありません");
+    return;
+  }
+csv(
+    list,
+    `期間CSV_${facility().short}_${from}_${to}.csv`
+  );
+}
+  function exportUserCSV(){
   const u=document.getElementById("csvUserSelect")?.value||"全員";
 　const from=document.getElementById("csvUserFrom")?.value||"";
 　const to=document.getElementById("csvUserTo")?.value||"";
@@ -1132,6 +1165,25 @@ action=`<button onclick="exportWeeklyCSV()">この週でCSV出力</button>`;
 if(state.csvPanel==="monthly"){
 body=`<label>出力月<input id="csvMonthlyMonth" type="month" value="${h(state.date.slice(0,7))}"></label>`;
 action=`<button onclick="exportMonthlyCSV()">この月でCSV出力</button>`;
+}
+if(state.csvPanel==="range"){
+    body=`
+<div class="csv-user-row">
+  <label>開始日
+    <input id="csvRangeFrom" type="date" value="${h(state.date)}">
+  </label>
+
+  <label>終了日
+    <input id="csvRangeTo" type="date" value="${h(state.date)}">
+  </label>
+</div>
+`;
+
+    action=`
+    <button onclick="exportRangeCSV()">
+        この期間でCSV出力
+    </button>
+    `;
 }
 if(state.csvPanel==="user"){
 body=`<div class="csv-user-row">
@@ -1311,6 +1363,7 @@ ${isAdmin()?`
 <section class="card full"><h2>実績確認</h2><div class="summary"><div><small>本日の訪問数</small><b>${daily.length}回</b></div><div><small>合計時間</small><b>${fmt(total)}</b></div><div><small>対応利用者数</small><b>${unique}名</b></div><div><small>平均対応時間</small><b>${avg}分</b></div></div>
 <div class="actions" style="margin-bottom:12px;">
   <button onclick="dailyCSV()">日別CSV</button>
+  <button onclick="rangeCSV()">期間指定</button>
   <button onclick="weeklyCSV()">週別CSV</button>
   <button onclick="monthlyCSV()">月別CSV</button>
   <button onclick="userCSV()">利用者別CSV</button>
