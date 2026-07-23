@@ -1024,34 +1024,95 @@ function exportDailyCSV(){
 }
 function exportWeeklyCSV(){const d=document.getElementById("csvWeeklyDate")?.value||state.date,w=weekRange(d);csv(records().filter(r=>r.date>=w.start&&r.date<=w.end),`週別CSV_${facility().short}_${w.start}_${w.end}.csv`)}
 function exportMonthlyCSV(){const m=document.getElementById("csvMonthlyMonth")?.value||state.date.slice(0,7);csv(records().filter(r=>r.date.startsWith(m)),`月別CSV_${facility().short}_${m}.csv`)}
-function exportRangeCSV(){
-  const from = document.getElementById("csvRangeFrom")?.value || "";
-  const to = document.getElementById("csvRangeTo")?.value || "";
-if(!from || !to){
+async function exportRangeCSV(){
+  const from =
+    document.getElementById("csvRangeFrom")?.value || "";
+
+  const to =
+    document.getElementById("csvRangeTo")?.value || "";
+
+  if(!from || !to){
     alert("開始日と終了日を選択してください");
     return;
   }
-if(from > to){
+
+  if(from > to){
     alert("開始日が終了日より後になっています");
     return;
   }
-const list = records()
-    .filter(r => {
-      if(r.date < from) return false;
-      if(r.date > to) return false;
-      return true;
-    })
-    .sort((a,b)=>{
-      if(a.date !== b.date){
-        return a.date.localeCompare(b.date);
-      }
-      return (a.startTime || "").localeCompare(b.startTime || "");
-    });
-if(list.length === 0){
+
+  const facilityUuid = FACILITY_IDS[state.facilityId];
+
+  if(!facilityUuid){
+    alert("施設情報を取得できません");
+    return;
+  }
+
+  let allData = [];
+  let offset = 0;
+  const pageSize = 1000;
+
+  while(true){
+    const { data, error } = await supabaseClient
+      .from("nursing_records")
+      .select("*")
+      .eq("facility_id", facilityUuid)
+      .gte("visit_date", from)
+      .lte("visit_date", to)
+      .order("visit_date", { ascending:true })
+      .order("start_time", { ascending:true })
+      .range(offset, offset + pageSize - 1);
+
+    if(error){
+      alert("期間CSV読込エラー：" + error.message);
+      return;
+    }
+
+    allData = allData.concat(data || []);
+
+    if(!data || data.length < pageSize){
+      break;
+    }
+
+    offset += pageSize;
+  }
+
+  if(allData.length === 0){
     alert("指定期間の記録がありません");
     return;
   }
-csv(
+
+  const list = allData.map(r => ({
+    id: r.id,
+    facilityId: facilityKeyFromUuid(r.facility_id),
+    date: r.visit_date,
+    user: r.patient_name,
+    staff: r.staff_name,
+    job: r.job,
+    content: r.content,
+    startTime: r.start_time,
+    endTime: r.end_time,
+    minutes: r.total_minutes || 0,
+    visitNo: 0,
+    vitals: {
+      temperature: r.temperature || "",
+      systolic: r.systolic || "",
+      diastolic: r.diastolic || "",
+      pulse: r.pulse || "",
+      spo2: r.spo2 || "",
+      memo: r.memo || ""
+    }
+  }));
+
+  const visitCountMap = {};
+
+  list.forEach(r => {
+    const key = `${r.date}_${r.user}`;
+    visitCountMap[key] = (visitCountMap[key] || 0) + 1;
+    r.visitNo = visitCountMap[key];
+  });
+
+  csv(
     list,
     `期間CSV_${facility().short}_${from}_${to}.csv`
   );
