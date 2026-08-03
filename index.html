@@ -892,8 +892,14 @@ async function saveEdit(id){
     staff_name: document.getElementById(`ed-staff-${id}`).value,
     job: document.getElementById(`ed-job-${id}`).value,
     content: document.getElementById(`ed-content-${id}`).value,
-    start_time: document.getElementById(`ed-start-${id}`).value,
-    end_time: document.getElementById(`ed-end-${id}`).value,
+    start_time: document
+  .getElementById(`ed-start-${id}`)
+  .value
+  .replace(/;/g, ":"),
+end_time: document
+  .getElementById(`ed-end-${id}`)
+  .value
+  .replace(/;/g, ":"),
     temperature: document.getElementById(`ed-temp-${id}`).value || null,
     systolic: document.getElementById(`ed-sys-${id}`).value || null,
     diastolic: document.getElementById(`ed-dia-${id}`).value || null,
