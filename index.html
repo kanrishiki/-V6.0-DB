@@ -468,7 +468,7 @@ async function loadAnnouncementsFromSupabase(){
 function renderLogin(){
 root.innerHTML=`
 <div class="login"><div class="login-card">
-<h1>看護記録・時間積算アプリ Ver6.6-beta</h1>
+<h1>看護記録・時間積算アプリ Ver6.7-beta</h1>
 <p class="muted">内容複数選択・カレンダー対応版</p>
 <label>ログイン拠点<select id="loginFacility">${FACILITIES.map(f=>`<option value="${f.id}" ${state.facilityId===f.id?"selected":""}>${h(f.name)}</option>`).join("")}</select></label>
 <label>ログイン種別<select id="loginType">
@@ -1447,7 +1447,7 @@ root.innerHTML=`
 <div class="app">
 <div class="header">
   <div>
-    <h1>看護記録・時間積算アプリ Ver6.6-Beta</h1>
+    <h1>看護記録・時間積算アプリ Ver6.7-Beta</h1>
     <p>${h(facility().name)} <span class="badge">${isAdmin()?"管理者画面":"職員画面"}</span></p>
     ${isMaster()?`
   <label style="max-width:320px;margin-top:10px;">
