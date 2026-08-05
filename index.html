@@ -148,6 +148,36 @@ Ver6.6 Release Candidate 1 (RC1)
   transition: height .2s ease;
   resize: vertical;
 }
+  .announcement-card{
+  background:#fff8d8;
+  border:1px solid #f1d675;
+  border-left:6px solid #e6a700;
+  border-radius:14px;
+  padding:16px 20px;
+  margin:16px 0 22px;
+}
+
+.announcement-heading{
+  font-weight:700;
+  font-size:18px;
+  margin-bottom:8px;
+}
+
+.announcement-title{
+  font-weight:700;
+  font-size:17px;
+  margin-bottom:8px;
+}
+
+.announcement-body{
+  line-height:1.7;
+}
+
+.announcement-limit{
+  margin-top:10px;
+  font-size:13px;
+  color:#6b7280;
+}
 </style>
 </head>
 <body>
@@ -334,6 +364,25 @@ state.users = data.map(p => ({
 save();
 render();
 }
+async function loadAnnouncementsFromSupabase(){
+  const today = getToday();
+
+  const { data, error } = await supabaseClient
+    .from("announcements")
+    .select("*")
+    .gte("show_until", today)
+    .order("created_at", { ascending:false })
+    .limit(1);
+
+  if(error){
+    console.error("お知らせ読込エラー：", error.message);
+    state.announcement = null;
+    return;
+  }
+
+  state.announcement = data?.[0] || null;
+  save();
+}  
    async function testLoadPatients(){
   await loadPatientsFromSupabase();
 
@@ -411,6 +460,7 @@ if(type==="master" && pw!==MASTER_PASSWORD){
   await loadStaffFromSupabase();
   await loadContentFromSupabase();
   await loadRecordsFromSupabase();
+　await loadAnnouncementsFromSupabase();
 
   setupRealtimeSync();
 }
@@ -1343,7 +1393,25 @@ root.innerHTML=`
     <button class="outline" onclick="logout()">ログアウト</button>
   </div>
 </div>
+${state.announcement ? `
+  <div class="announcement-card">
+    <div class="announcement-heading">
+      📢 システム更新のお知らせ
+    </div>
 
+    <div class="announcement-title">
+      ${h(state.announcement.title)}
+    </div>
+
+    <div class="announcement-body">
+      ${h(state.announcement.body).replace(/\n/g, "<br>")}
+    </div>
+
+    <div class="announcement-limit">
+      掲載期限：${h(state.announcement.show_until)}
+    </div>
+  </div>
+` : ""}
 <div class="grid">
 <section class="card ${isAdmin()?"":"full"}">
 <h2>職員入力画面</h2>
