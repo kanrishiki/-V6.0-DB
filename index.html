@@ -465,6 +465,11 @@ async function loadAnnouncementsFromSupabase(){
   save();
   render();
 }
+  function openAnnouncement(){
+  state.announcementClosed = false;
+  save();
+  render();
+}
    async function testLoadPatients(){
   await loadPatientsFromSupabase();
 
@@ -1515,35 +1520,60 @@ ${isMaster() ? `
     </div>
   </div>
 ` : ""}
-${state.announcement && !state.announcementClosed ? `
-  <div class="announcement-card">
-   <div class="announcement-heading"
-     style="display:flex;justify-content:space-between;align-items:center;">
+${state.announcement ? `
+  ${
+    state.announcementClosed
+      ? `
+        <div class="announcement-card" style="padding:10px 16px;">
+          <div
+            class="announcement-heading"
+            style="display:flex;justify-content:space-between;align-items:center;margin:0;"
+          >
+            <span>📢 システム更新のお知らせ</span>
 
-    <span>📢 システム更新のお知らせ</span>
+            <button
+              type="button"
+              class="outline"
+              onclick="openAnnouncement()"
+              style="width:auto;padding:6px 14px;"
+            >
+              再表示
+            </button>
+          </div>
+        </div>
+      `
+      : `
+        <div class="announcement-card">
+          <div
+            class="announcement-heading"
+            style="display:flex;justify-content:space-between;align-items:center;gap:12px;"
+          >
+            <span>📢 システム更新のお知らせ</span>
 
-    <button
-        class="outline"
-        onclick="closeAnnouncement()"
-        style="width:auto;padding:6px 14px;"
-    >
-        閉じる
-    </button>
+            <button
+              type="button"
+              class="outline"
+              onclick="closeAnnouncement()"
+              style="width:auto;padding:6px 14px;"
+            >
+              閉じる
+            </button>
+          </div>
 
-</div>
+          <div class="announcement-title">
+            ${h(state.announcement.title)}
+          </div>
 
-    <div class="announcement-title">
-      ${h(state.announcement.title)}
-    </div>
+          <div class="announcement-body">
+            ${h(state.announcement.body).replace(/\n/g, "<br>")}
+          </div>
 
-    <div class="announcement-body">
-      ${h(state.announcement.body).replace(/\n/g, "<br>")}
-    </div>
-
-    <div class="announcement-limit">
-      掲載期限：${h(state.announcement.show_until)}
-    </div>
-  </div>
+          <div class="announcement-limit">
+            掲載期限：${h(state.announcement.show_until)}
+          </div>
+        </div>
+      `
+  }
 ` : ""}
 <div class="grid">
 <section class="card ${isAdmin()?"":"full"}">
