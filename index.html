@@ -1510,11 +1510,22 @@ ${isMaster() ? `
     </div>
   </div>
 ` : ""}
-${state.announcement ? `
+${state.announcement && !state.announcementClosed ? `
   <div class="announcement-card">
-    <div class="announcement-heading">
-      📢 システム更新のお知らせ
-    </div>
+   <div class="announcement-heading"
+     style="display:flex;justify-content:space-between;align-items:center;">
+
+    <span>📢 システム更新のお知らせ</span>
+
+    <button
+        class="outline"
+        onclick="closeAnnouncement()"
+        style="width:auto;padding:6px 14px;"
+    >
+        閉じる
+    </button>
+
+</div>
 
     <div class="announcement-title">
       ${h(state.announcement.title)}
