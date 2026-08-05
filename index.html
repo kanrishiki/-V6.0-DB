@@ -382,7 +382,84 @@ async function loadAnnouncementsFromSupabase(){
 
   state.announcement = data?.[0] || null;
   save();
-}  
+}  async function saveAnnouncement(){
+  if(!isMaster()){
+    alert("マスター管理者のみ更新できます");
+    return;
+  }
+
+  const title =
+    document.getElementById("announcementTitle")?.value.trim() || "";
+
+  const body =
+    document.getElementById("announcementBody")?.value.trim() || "";
+
+  if(!title || !body){
+    alert("タイトルと本文を入力してください");
+    return;
+  }
+
+  const today = new Date();
+  const limit = new Date(today);
+  limit.setDate(limit.getDate() + 7);
+
+  const showUntil =
+    `${limit.getFullYear()}-` +
+    `${String(limit.getMonth() + 1).padStart(2, "0")}-` +
+    `${String(limit.getDate()).padStart(2, "0")}`;
+
+  const { error: deleteError } = await supabaseClient
+    .from("announcements")
+    .delete()
+    .neq("id", 0);
+
+  if(deleteError){
+    alert("旧お知らせ削除エラー：" + deleteError.message);
+    return;
+  }
+
+  const { error: insertError } = await supabaseClient
+    .from("announcements")
+    .insert({
+      title,
+      body,
+      show_until: showUntil
+    });
+
+  if(insertError){
+    alert("お知らせ登録エラー：" + insertError.message);
+    return;
+  }
+
+  await loadAnnouncementsFromSupabase();
+  render();
+
+  alert("システム更新のお知らせを掲載しました");
+}
+  async function deleteAnnouncement(){
+  if(!isMaster()){
+    alert("マスター管理者のみ削除できます");
+    return;
+  }
+
+  if(!confirm("現在のお知らせを削除しますか？")) return;
+
+  const { error } = await supabaseClient
+    .from("announcements")
+    .delete()
+    .neq("id", 0);
+
+  if(error){
+    alert("お知らせ削除エラー：" + error.message);
+    return;
+  }
+
+  state.announcement = null;
+  save();
+  render();
+
+  alert("お知らせを削除しました");
+}
    async function testLoadPatients(){
   await loadPatientsFromSupabase();
 
@@ -1393,6 +1470,46 @@ root.innerHTML=`
     <button class="outline" onclick="logout()">ログアウト</button>
   </div>
 </div>
+${isMaster() ? `
+  <div class="announcement-card">
+    <div class="announcement-heading">
+      📢 システム更新を編集
+    </div>
+
+    <label>
+      タイトル
+      <input
+        id="announcementTitle"
+        value="${h(state.announcement?.title || "")}"
+        placeholder="例：夜勤時間計算の不具合を修正しました"
+      >
+    </label>
+
+    <label style="display:block;margin-top:10px;">
+      本文
+      <textarea
+        id="announcementBody"
+        placeholder="修正内容や注意事項を入力"
+        style="min-height:120px;"
+      >${h(state.announcement?.body || "")}</textarea>
+    </label>
+
+    <div class="actions" style="margin-top:12px;">
+      <button onclick="saveAnnouncement()">
+        7日間掲載する
+      </button>
+
+      ${state.announcement ? `
+        <button
+          class="outline"
+          onclick="deleteAnnouncement()"
+        >
+          現在のお知らせを削除
+        </button>
+      ` : ""}
+    </div>
+  </div>
+` : ""}
 ${state.announcement ? `
   <div class="announcement-card">
     <div class="announcement-heading">
