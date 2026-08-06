@@ -1569,7 +1569,14 @@ ${state.announcement ? `
             class="announcement-heading"
             style="display:flex;justify-content:space-between;align-items:center;margin:0;"
           >
-            <span>📢 システム更新のお知らせ</span>
+            <span>
+              ${
+                state.announcement.version &&
+                state.announcement.version !== APP_VERSION
+                  ? "🚀 最新版があります"
+                  : "📢 システム更新のお知らせ"
+              }
+            </span>
 
             <button
               type="button"
@@ -1583,12 +1590,27 @@ ${state.announcement ? `
         </div>
       `
       : `
-        <div class="announcement-card">
+        <div
+          class="announcement-card"
+          style="${
+            state.announcement.version &&
+            state.announcement.version !== APP_VERSION
+              ? "background:#ffe4e6;border-left-color:#dc2626;"
+              : ""
+          }"
+        >
           <div
             class="announcement-heading"
             style="display:flex;justify-content:space-between;align-items:center;gap:12px;"
           >
-            <span>📢 システム更新のお知らせ</span>
+            <span>
+              ${
+                state.announcement.version &&
+                state.announcement.version !== APP_VERSION
+                  ? "🚀 最新版があります"
+                  : "📢 システム更新のお知らせ"
+              }
+            </span>
 
             <button
               type="button"
@@ -1599,6 +1621,19 @@ ${state.announcement ? `
               閉じる
             </button>
           </div>
+
+          ${
+            state.announcement.version &&
+            state.announcement.version !== APP_VERSION
+              ? `
+                <div class="announcement-body" style="margin-bottom:12px;">
+                  現在：Ver${h(APP_VERSION)}
+                  <br>
+                  最新：Ver${h(state.announcement.version)}
+                </div>
+              `
+              : ""
+          }
 
           <div class="announcement-title">
             ${h(state.announcement.title)}
@@ -1611,6 +1646,19 @@ ${state.announcement ? `
           <div class="announcement-limit">
             掲載期限：${h(state.announcement.show_until)}
           </div>
+
+          ${
+            state.announcement.version &&
+            state.announcement.version !== APP_VERSION
+              ? `
+                <div class="actions" style="margin-top:12px;">
+                  <button onclick="updateAppNow()">
+                    今すぐ更新
+                  </button>
+                </div>
+              `
+              : ""
+          }
         </div>
       `
   }
