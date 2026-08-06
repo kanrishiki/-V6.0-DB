@@ -1488,31 +1488,6 @@ root.innerHTML=`
     <button class="outline" onclick="logout()">ログアウト</button>
   </div>
 </div>
-${state.announcement &&
-  state.announcement.version &&
-  state.announcement.version !== APP_VERSION ? `
-  
-  <div class="announcement-card"
-       style="background:#ffe4e6;border-left-color:#dc2626;">
-
-    <div class="announcement-heading">
-      🚀 最新版があります
-    </div>
-
-    <div class="announcement-body">
-      現在：Ver${h(APP_VERSION)}
-      <br>
-      最新：Ver${h(state.announcement.version)}
-    </div>
-
-    <div class="actions" style="margin-top:12px;">
-      <button onclick="updateAppNow()">
-        今すぐ更新
-      </button>
-    </div>
-
-  </div>
-` : ""}
 ${isMaster() ? `
   <div class="announcement-card">
     <div class="announcement-heading">
