@@ -474,9 +474,26 @@ if(!version || !title || !body){
   render();
 }
   function updateAppNow(){
-    const url = new URL(window.location.href);
-    url.searchParams.set("v", Date.now());
-    window.location.replace(url.toString());
+  const url = new URL(window.location.href);
+  url.searchParams.set("v", Date.now());
+  url.searchParams.set("updated", "1");
+  window.location.replace(url.toString());
+}
+  function showUpdatedMessage(){
+  const params = new URLSearchParams(window.location.search);
+
+  if(params.get("updated") === "1"){
+    alert("最新版に更新されました");
+
+    params.delete("updated");
+    params.delete("v");
+
+    const cleanUrl =
+      window.location.pathname +
+      (params.toString() ? `?${params.toString()}` : "");
+
+    window.history.replaceState({}, "", cleanUrl);
+  }
 }
    async function testLoadPatients(){
   await loadPatientsFromSupabase();
@@ -556,7 +573,7 @@ if(type==="master" && pw!==MASTER_PASSWORD){
   await loadContentFromSupabase();
   await loadRecordsFromSupabase();
 　await loadAnnouncementsFromSupabase();
-
+　showUpdatedMessage();
   setupRealtimeSync();
 }
 
