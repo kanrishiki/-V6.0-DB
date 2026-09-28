@@ -666,19 +666,45 @@ async function saveRecordToSupabase(record){
 return data.id;
 }
 async function loadRecordsFromSupabase(){
-let query = supabaseClient
-    .from("nursing_records")
-    .select("*")
-    .order("created_at", { ascending:false });
-if(!isMaster()){
-    query = query.eq("facility_id", FACILITY_IDS[state.facilityId]);
+
+  let allData = [];
+  let offset = 0;
+  const pageSize = 1000;
+
+  while(true){
+
+    let query = supabaseClient
+      .from("nursing_records")
+      .select("*")
+      .order("created_at", { ascending:false })
+      .range(offset, offset + pageSize - 1);
+
+    // master以外は自施設のみ
+    if(!isMaster()){
+      query = query.eq(
+        "facility_id",
+        FACILITY_IDS[state.facilityId]
+      );
+    }
+
+    const { data, error } = await query;
+
+    if(error){
+      alert("記録読込エラー：" + error.message);
+      return;
+    }
+
+    allData = allData.concat(data || []);
+
+    // 1000件未満なら最後のページ
+    if(!data || data.length < pageSize){
+      break;
+    }
+
+    offset += pageSize;
   }
-const { data, error } = await query;
-if(error){
-    alert("記録読込エラー：" + error.message);
-    return;
-  }
-  state.records = data.map(r => ({
+
+  state.records = allData.map(r => ({
     id: r.id,
     facilityId: facilityKeyFromUuid(r.facility_id),
     date: r.visit_date,
@@ -690,6 +716,7 @@ if(error){
     endTime: r.end_time,
     minutes: r.total_minutes || 0,
     visitNo: 0,
+
     vitals:{
       temperature: r.temperature || "",
       systolic: r.systolic || "",
@@ -699,18 +726,27 @@ if(error){
       memo: r.memo || ""
     }
   }));
-const visitCountMap = {};
 
-state.records
-  .sort((a,b) => {
-    if(a.date !== b.date) return a.date.localeCompare(b.date);
-    return (a.startTime || "").localeCompare(b.startTime || "");
-  })
-  .forEach(r => {
-    const key = `${r.date}_${r.user}`;
-    visitCountMap[key] = (visitCountMap[key] || 0) + 1;
-    r.visitNo = visitCountMap[key];
-  });
+  // 日付＋開始時間順に並べて訪問回数を振り直す
+  const visitCountMap = {};
+
+  state.records
+    .sort((a,b) => {
+      if(a.date !== b.date){
+        return a.date.localeCompare(b.date);
+      }
+
+      return (a.startTime || "")
+        .localeCompare(b.startTime || "");
+    })
+    .forEach(r => {
+      const key = `${r.date}_${r.user}`;
+
+      visitCountMap[key] =
+        (visitCountMap[key] || 0) + 1;
+
+      r.visitNo = visitCountMap[key];
+    });
 
   save();
   render();
